@@ -1,0 +1,1 @@
+cmake --build --preset vs2022-x64-debug
