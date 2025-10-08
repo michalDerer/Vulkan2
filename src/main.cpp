@@ -3,9 +3,9 @@
 #include <iostream>
 //#include <vector>
 
-
-#define VK_NO_PROTOTYPES
-#define VK_USE_PLATFORM_WIN32_KHR
+//definovane v CMakeLists.txt
+// #define VK_NO_PROTOTYPES
+// #define VK_USE_PLATFORM_WIN32_KHR
 #include "vulkan/vulkan.h"
 
 #include "SDL3/SDL.h"

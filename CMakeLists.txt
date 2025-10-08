@@ -5,10 +5,10 @@ project(Vulkan2 VERSION 1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 
+
 # Add include directory
 #include_directories(include)
 #include_directories(${CMAKE_SOURCE_DIR}/include))
-
 
 # Collect source files
 set(SOURCES
@@ -16,8 +16,16 @@ set(SOURCES
     #src/math.cpp
 )
 
+
 # Define executable
 add_executable(${PROJECT_NAME} ${SOURCES})
+
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    VK_NO_PROTOTYPES
+    VK_USE_PLATFORM_WIN32_KHR
+)
+
 
 find_package(SDL3 CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
