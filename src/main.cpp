@@ -13,6 +13,29 @@
 
 //Use a Loader Library volk namiesto rucneho loadu metod
 
+
+
+#define VK_CHECK(x)                                                                     \
+    VkResult err = x;                                                                   \
+    if (err != VK_SUCCESS)                                                              \
+    {                                                                                   \
+        std::cout << "Fatal: VkResult = %d at %s:%d\n", err, __FILE__, __LINE__;        \                                                        
+        abort();                                                                        \ 
+    }                                                                                   \
+
+
+struct Context
+{
+    VkInstance instance = VK_NULL_HANDLE;
+    VkSurfaceKHR surface = VK_NULL_HANDLE;
+    VkPhysicalDevice pDvecie = VK_NULL_HANDLE;
+    VkDevice device = VK_NULL_HANDLE;
+
+    int renderQueueFamilyIdx = -1;
+    VkQueue queue = VK_NULL_HANDLE;
+};
+
+
 void main ()
 {
     HMODULE vulkanLib = LoadLibraryA("vulkan-1.dll");
@@ -50,21 +73,22 @@ void main ()
     }
 
 
-    VkInstance instance = VK_NULL_HANDLE;
+    Context context{};
+
     
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = "Dynamic Vulkan Example";
+    appInfo.pApplicationName = "Dynamic Vulkan 1.4 Example";
     appInfo.applicationVersion = 1;
     appInfo.pEngineName = "No Engine";
     appInfo.engineVersion = 1;
-    appInfo.apiVersion = VK_API_VERSION_1_1;
+    appInfo.apiVersion = VK_API_VERSION_1_4;
 
-    VkInstanceCreateInfo instanceCreateInfo{};
-    instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    instanceCreateInfo.pApplicationInfo = &appInfo;
+    VkInstanceCreateInfo instanceInfo{};
+    instanceInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    instanceInfo.pApplicationInfo = &appInfo;
 
-    VkResult result = fvkCreateInstance(&instanceCreateInfo, VK_NULL_HANDLE, &instance);
+    VkResult result = fvkCreateInstance(&instanceInfo, VK_NULL_HANDLE, &context.instance);
 
     if (result != VK_SUCCESS) 
     {
@@ -73,7 +97,7 @@ void main ()
     }
     
 
-    fvkDestroyInstance = (PFN_vkDestroyInstance)fvkGetInstanceProcAddr(instance, "vkDestroyInstance");
+    fvkDestroyInstance = (PFN_vkDestroyInstance)fvkGetInstanceProcAddr(context.instance, "vkDestroyInstance");
 
     if (!fvkDestroyInstance)
     {
