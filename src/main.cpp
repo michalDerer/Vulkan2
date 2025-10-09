@@ -15,13 +15,17 @@
 
 
 
-#define VK_CHECK(x)                                                                     \
-    VkResult err = x;                                                                   \
-    if (err != VK_SUCCESS)                                                              \
-    {                                                                                   \
-        std::cout << "Fatal: VkResult = %d at %s:%d\n", err, __FILE__, __LINE__;        \                                                        
-        abort();                                                                        \ 
-    }                                                                                   \
+#define VK_CHECK(result)                                                                                    \
+do {                                                                                                        \
+    VkResult err = result;                                                                                  \
+    if (err != VK_SUCCESS)                                                                                  \
+    {                                                                                                       \
+        /*fprintf(stderr, "Vulkan error: %d at %s:%d\n", result, __FILE__, __LINE__);*/                     \
+        std::cerr << "Vulkan error: " << err << " at " << __FILE__ << ":" << __LINE__ << std::endl;         \
+        abort();                                                                                            \
+    }                                                                                                       \
+} while (0)                                                                                            
+
 
 
 struct Context
@@ -74,8 +78,9 @@ void main ()
 
 
     Context context{};
+    //VkInstance instance = VK_NULL_HANDLE;
 
-    
+
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.pApplicationName = "Dynamic Vulkan 1.4 Example";
@@ -88,14 +93,7 @@ void main ()
     instanceInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instanceInfo.pApplicationInfo = &appInfo;
 
-    VkResult result = fvkCreateInstance(&instanceInfo, VK_NULL_HANDLE, &context.instance);
-
-    if (result != VK_SUCCESS) 
-    {
-        std::cerr << "vkCreateInstance failed with code " << result << std::endl;
-        return;
-    }
-    
+    VK_CHECK(fvkCreateInstance(&instanceInfo, VK_NULL_HANDLE, &context.instance));
 
     fvkDestroyInstance = (PFN_vkDestroyInstance)fvkGetInstanceProcAddr(context.instance, "vkDestroyInstance");
 
@@ -159,10 +157,10 @@ void main ()
 
     end:
 
-    if (instance)
+    if (context.instance)
     {
-        fvkDestroyInstance(instance, VK_NULL_HANDLE);
-        instance = VK_NULL_HANDLE;
+        fvkDestroyInstance(context.instance, VK_NULL_HANDLE);
+        context.instance = VK_NULL_HANDLE;
     }
 
     if (vulkanLib)

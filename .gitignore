@@ -11,7 +11,7 @@
 #_deps
 #CMakeUserPresets.json
 
-#ignoruj .vscode nastavenia
+#ignoruj .vscode nastavenia v root zlozke
 /.vscode/
 
 #Ignoruj build zlozku a jej obsah v root zlozke
