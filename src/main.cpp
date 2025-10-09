@@ -14,17 +14,37 @@
 //Use a Loader Library volk namiesto rucneho loadu metod
 
 
-
-#define VK_CHECK(result)                                                                                    \
+#ifndef _DEBUG
+#define VK_CHECK(value)  
+#else
+#define VK_CHECK(value)                                                                                     \
 do {                                                                                                        \
-    VkResult err = result;                                                                                  \
-    if (err != VK_SUCCESS)                                                                                  \
+    VkResult vValue = value;                                                                                \
+    if (vValue != VK_SUCCESS)                                                                               \
     {                                                                                                       \
-        /*fprintf(stderr, "Vulkan error: %d at %s:%d\n", result, __FILE__, __LINE__);*/                     \
-        std::cerr << "Vulkan error: " << err << " at " << __FILE__ << ":" << __LINE__ << std::endl;         \
+        /*fprintf(stderr, "Vulkan error: %d at %s:%d\n", vValue, __FILE__, __LINE__);*/                     \
+        std::cerr << "Vulkan error: " << vValue << " at " << __FILE__ << ":" << __LINE__ << std::endl;      \
         abort();                                                                                            \
     }                                                                                                       \
 } while (0)                                                                                            
+#endif
+
+#ifndef _DEBUG
+#define NULL_CHECK(p)  
+#else
+#define NULL_CHECK(p)                                                                                       \
+do {                                                                                                        \
+    void* pP = p;                                                                                           \
+    if (pP == NULL)                                                                                         \
+    {                                                                                                       \
+        std::cerr << "Null error at " << __FILE__ << ":" << __LINE__ << std::endl;                          \
+        abort();                                                                                            \
+    }                                                                                                       \
+} while (0)
+#endif
+
+
+
 
 
 
@@ -40,24 +60,20 @@ struct Context
 };
 
 
-void main ()
+int main ()
 {
     HMODULE vulkanLib = LoadLibraryA("vulkan-1.dll");
     if (!vulkanLib) 
     {
         std::cerr << "Failed to load vulkan-1.dll" << std::endl;
-        return;
+        return 1;
     }
 
     PFN_vkGetInstanceProcAddr fvkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)GetProcAddress(vulkanLib, "vkGetInstanceProcAddr");
+    NULL_CHECK(fvkGetInstanceProcAddr);
+
     PFN_vkCreateInstance fvkCreateInstance = VK_NULL_HANDLE;
     PFN_vkDestroyInstance fvkDestroyInstance = VK_NULL_HANDLE;
-
-    if (!fvkGetInstanceProcAddr) 
-    {
-        std::cerr << "Failed to load vkGetInstanceProcAddr" << std::endl;
-        return;
-    }
 
     /*
     In Vulkan, functions are categorized into global, instance, and device level:
@@ -68,94 +84,98 @@ void main ()
     Device	    vkGetDeviceProcAddr(device, "function")
     */
 
-    fvkCreateInstance = (PFN_vkCreateInstance)fvkGetInstanceProcAddr(VK_NULL_HANDLE, "vkCreateInstance");    
+    fvkCreateInstance = (PFN_vkCreateInstance)fvkGetInstanceProcAddr(VK_NULL_HANDLE, "vkCreateInstance");
+    NULL_CHECK(fvkCreateInstance);
 
-    if (!fvkCreateInstance) 
-    {
-        std::cerr << "Failed to load vkGetInstanceProcAddr" << std::endl;
-        return;
-    }
 
 
     Context context{};
     //VkInstance instance = VK_NULL_HANDLE;
 
 
-    VkApplicationInfo appInfo{};
-    appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = "Dynamic Vulkan 1.4 Example";
-    appInfo.applicationVersion = 1;
-    appInfo.pEngineName = "No Engine";
-    appInfo.engineVersion = 1;
-    appInfo.apiVersion = VK_API_VERSION_1_4;
 
-    VkInstanceCreateInfo instanceInfo{};
-    instanceInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    instanceInfo.pApplicationInfo = &appInfo;
+    VkApplicationInfo appInfo{ 
+        .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+        .pApplicationName = "Dynamic Vulkan 1.4 Example",
+        .apiVersion = VK_API_VERSION_1_4 };
+
+    VkInstanceCreateInfo instanceInfo{
+        .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+        .pApplicationInfo = &appInfo};
 
     VK_CHECK(fvkCreateInstance(&instanceInfo, VK_NULL_HANDLE, &context.instance));
 
     fvkDestroyInstance = (PFN_vkDestroyInstance)fvkGetInstanceProcAddr(context.instance, "vkDestroyInstance");
-
-    if (!fvkDestroyInstance)
-    {
-        std::cerr << "Failed to load vkDestroyInstance" << std::endl;
-        return;
-    }
+    NULL_CHECK(fvkDestroyInstance);
 
 
 
     // Initialize SDL
     if (!SDL_Init(SDL_INIT_VIDEO)) 
     {
-        std::cerr << "SDL_Init Error: " << SDL_GetError() << "\n";
-        goto end;
+        std::cerr << "SDL_Init Error: " << __FILE__ << ":" << __LINE__  << " " << SDL_GetError() << std::endl;
     }
-
-    // Create Vulkan-capable SDL window
-    SDL_Window* window = SDL_CreateWindow(
-        "Vulkan SDL3 Window",
-        800,
-        600,
-        SDL_WINDOW_VULKAN
-    );
-
-    if (!window) 
+    else
     {
-        std::cerr << "SDL_CreateWindow Error: " << SDL_GetError() << "\n";
-        SDL_Quit();
-        
-        goto end;
-    }
-    
-    // Query SDL-required Vulkan extensions
-    Uint32 extensionsCount = 0;
-    const char* const* extensions = SDL_Vulkan_GetInstanceExtensions(&extensionsCount);
 
-    for(Uint32 i = 0; i < extensionsCount; i++ )
-    {
-        std::cout << extensions[i] << "\n";
-    }
+        //SDL_Vulkan_LoadLibrary();
+        //SDL_Vulkan_UnloadLibrary();
+        //SDL_Vulkan_CreateSurface
+        //SDL_Vulkan_DestroySurface
 
-    // Main loop
-    bool running = true;
-    SDL_Event event;
-    while (running) 
-    {
-        while (SDL_PollEvent(&event)) 
+        // Query SDL-required Vulkan extensions mozem volat az po SDL_Init
+        Uint32 extensionsCount = 0;
+        const char* const* extensions = SDL_Vulkan_GetInstanceExtensions(&extensionsCount);
+        for (Uint32 i = 0; i < extensionsCount; i++)
         {
-            if (event.type == SDL_EVENT_QUIT) 
+            std::cout << extensions[i] << "\n";
+        }
+
+
+        //SDL_Window* window = SDL_CreateWindow("MyApp", 800, 600, SDL_WINDOW_VULKAN);
+        //// Get window properties
+        //SDL_PropertiesID props = SDL_GetWindowProperties(window);
+        //// Get HWND
+        //HWND hwnd = (HWND)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
+        //// Get HINSTANCE (the module handle)
+        //HINSTANCE hinstance = (HINSTANCE)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER, nullptr);
+        
+
+        // Create Vulkan-capable SDL window
+        SDL_Window* window = SDL_CreateWindow(
+            "Vulkan SDL3 Window",
+            800,
+            600,
+            SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE
+        );
+    
+        if (!window) 
+        {
+            std::cerr << "SDL_CreateWindow Error: " << __FILE__ << ":" << __LINE__  << " " << SDL_GetError() << std::endl;
+        }
+        else
+        {
+            // Main loop
+            bool running = true;
+            SDL_Event event;
+            while (running) 
             {
-                running = false;
+                while (SDL_PollEvent(&event)) 
+                {
+                    if (event.type == SDL_EVENT_QUIT) 
+                    {
+                        running = false;
+                    }
+                }
             }
         }
+    
+        SDL_DestroyWindow(window);
+        SDL_Quit();
     }
 
-    SDL_DestroyWindow(window);
-    SDL_Quit();
 
 
-    end:
 
     if (context.instance)
     {
