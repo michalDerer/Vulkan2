@@ -31,8 +31,9 @@ void Dynamic::freeLib()
         vkCreateInstance = VK_NULL_HANDLE;
         //instance level functions
         vkDestroyInstance = VK_NULL_HANDLE;
-        //platform depending
+#ifdef VK_USE_PLATFORM_WIN32_KHR
         vkCreateWin32SurfaceKHR = VK_NULL_HANDLE;
+#endif
         vkDestroySurfaceKHR = VK_NULL_HANDLE;
     }
 }
@@ -42,10 +43,11 @@ void Dynamic::loadInstanceLevel(VkInstance& instance)
     vkDestroyInstance = (PFN_vkDestroyInstance)vkGetInstanceProcAddr(instance, "vkDestroyInstance");
     NULL_CHECK(vkDestroyInstance);
 
-    //platform depending
+#ifdef VK_USE_PLATFORM_WIN32_KHR
     vkCreateWin32SurfaceKHR = (PFN_vkCreateWin32SurfaceKHR)vkGetInstanceProcAddr(instance, "vkCreateWin32SurfaceKHR");
     NULL_CHECK(vkCreateWin32SurfaceKHR);
-    
+#endif
+
     vkDestroySurfaceKHR = (PFN_vkDestroySurfaceKHR)vkGetInstanceProcAddr(instance, "vkDestroySurfaceKHR");
     NULL_CHECK(vkDestroySurfaceKHR);
 

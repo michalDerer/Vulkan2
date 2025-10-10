@@ -28,8 +28,9 @@ struct Dynamic
     PFN_vkCreateInstance vkCreateInstance = VK_NULL_HANDLE;
     //INSTANCE LEVEL FUNCTIONS
     PFN_vkDestroyInstance vkDestroyInstance = VK_NULL_HANDLE;
-    //platform depending
+#ifdef VK_USE_PLATFORM_WIN32_KHR
     PFN_vkCreateWin32SurfaceKHR vkCreateWin32SurfaceKHR = VK_NULL_HANDLE;
+#endif
     PFN_vkDestroySurfaceKHR vkDestroySurfaceKHR = VK_NULL_HANDLE;
 
 
