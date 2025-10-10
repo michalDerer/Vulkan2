@@ -1,9 +1,9 @@
 
 //#include <windows.h>
-#include <iostream>
+//#include <iostream>
 //#include <vector>
 
-//definovane v nastaveniach
+//defines pre vulkan header setnute v CMakeLists
 // #define VK_NO_PROTOTYPES
 // #define VK_USE_PLATFORM_WIN32_KHR
 #include "vulkan/vulkan.h"
@@ -12,39 +12,7 @@
 #include "SDL3/SDL_vulkan.h"
 
 #include "macross.hpp"
-
-
-// #ifndef _DEBUG
-// #define VK_CHECK(value)  
-// #else
-// #define VK_CHECK(value)                                                                                     \
-// do {                                                                                                        \
-//     VkResult vValue = value;                                                                                \
-//     if (vValue != VK_SUCCESS)                                                                               \
-//     {                                                                                                       \
-//         /*fprintf(stderr, "Vulkan error: %d at %s:%d\n", vValue, __FILE__, __LINE__);*/                     \
-//         std::cerr << "Vulkan error: " << vValue << " at " << __FILE__ << ":" << __LINE__ << std::endl;      \
-//         abort();                                                                                            \
-//     }                                                                                                       \
-// } while (0)                                                                                            
-// #endif
-
-// #ifndef _DEBUG
-// #define NULL_CHECK(p)  
-// #else
-// #define NULL_CHECK(p)                                                                                       \
-// do {                                                                                                        \
-//     void* pP = p;                                                                                           \
-//     if (pP == NULL)                                                                                         \
-//     {                                                                                                       \
-//         std::cerr << "Null error at " << __FILE__ << ":" << __LINE__ << std::endl;                          \
-//         abort();                                                                                            \
-//     }                                                                                                       \
-// } while (0)
-// #endif
-
-
-
+#include "dynamic.hpp"
 
 
 
@@ -62,33 +30,28 @@ struct Context
 
 int main ()
 {
-    //HINSTANCE vulkanLib = LoadLibrary("vulkan-1.dll");
-    //NULL_CHECK(vulkanLib);
+   
+    Dynamic d{};
+    d.loadLib("vulkan-1.dll");
 
-    PFN_vkGetInstanceProcAddr fvkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)GetProcAddress(vulkanLib, "vkGetInstanceProcAddr");
-    NULL_CHECK(fvkGetInstanceProcAddr);
+    // Initialize SDL
+    if (!SDL_Init(SDL_INIT_VIDEO))
+    {
+        std::cerr << "SDL_Init Error: " << __FILE__ << ":" << __LINE__ << " " << SDL_GetError() << std::endl;
 
-    PFN_vkCreateInstance fvkCreateInstance = VK_NULL_HANDLE;
-    PFN_vkDestroyInstance fvkDestroyInstance = VK_NULL_HANDLE;
-
-    /*
-    In Vulkan, functions are categorized into global, instance, and device level:
-
-    Level	    How you load it
-    Global	    vkGetInstanceProcAddr(nullptr, "function")
-    Instance	vkGetInstanceProcAddr(instance, "function")
-    Device	    vkGetDeviceProcAddr(device, "function")
-    */
-
-    fvkCreateInstance = (PFN_vkCreateInstance)fvkGetInstanceProcAddr(VK_NULL_HANDLE, "vkCreateInstance");
-    NULL_CHECK(fvkCreateInstance);
-
-
+        d.freeLib();
+        return 1;
+    }
 
     Context context{};
-    //VkInstance instance = VK_NULL_HANDLE;
 
- 
+    // get SDL-required Vulkan instance extensions mozem volat az po SDL_Init
+    Uint32 instanceExtensionsCount = 0;
+    const char* const* instanceExtensions = SDL_Vulkan_GetInstanceExtensions(&instanceExtensionsCount);
+    for (Uint32 i = 0; i < instanceExtensionsCount; i++)
+    {
+        std::cout << instanceExtensions[i] << "\n";
+    }
 
     VkApplicationInfo appInfo{ 
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
@@ -97,92 +60,80 @@ int main ()
 
     VkInstanceCreateInfo instanceInfo{
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-        .pApplicationInfo = &appInfo};
+        .pApplicationInfo = &appInfo,
+        .enabledExtensionCount = instanceExtensionsCount,
+        .ppEnabledExtensionNames = instanceExtensions };
 
-    VK_CHECK(fvkCreateInstance(&instanceInfo, VK_NULL_HANDLE, &context.instance));
+    VK_CHECK(d.vkCreateInstance(&instanceInfo, VK_NULL_HANDLE, &context.instance));
 
-    fvkDestroyInstance = (PFN_vkDestroyInstance)fvkGetInstanceProcAddr(context.instance, "vkDestroyInstance");
-    NULL_CHECK(fvkDestroyInstance);
+    d.loadInstanceLevel(context.instance);
 
+    // Create Vulkan-capable SDL window
+    SDL_Window* window = SDL_CreateWindow(
+        "Vulkan SDL3 Window",
+        800,
+        600,
+        SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE
+    );
 
-
-    // Initialize SDL
-    if (!SDL_Init(SDL_INIT_VIDEO)) 
+    if (!window)
     {
-        std::cerr << "SDL_Init Error: " << __FILE__ << ":" << __LINE__  << " " << SDL_GetError() << std::endl;
+        std::cerr << "SDL_CreateWindow Error: " << __FILE__ << ":" << __LINE__ << " " << SDL_GetError() << std::endl;
+
+        SDL_Quit();
+        d.vkDestroyInstance(context.instance, VK_NULL_HANDLE);
+        context.instance = VK_NULL_HANDLE;
+        d.freeLib();
+        return 1;
     }
-    else
-    {
-
-        //SDL_Vulkan_LoadLibrary();
-        //SDL_Vulkan_UnloadLibrary();
-        //SDL_Vulkan_CreateSurface
-        //SDL_Vulkan_DestroySurface
-
-        // Query SDL-required Vulkan extensions mozem volat az po SDL_Init
-        Uint32 extensionsCount = 0;
-        const char* const* extensions = SDL_Vulkan_GetInstanceExtensions(&extensionsCount);
-        for (Uint32 i = 0; i < extensionsCount; i++)
-        {
-            std::cout << extensions[i] << "\n";
-        }
-
-
-        //SDL_Window* window = SDL_CreateWindow("MyApp", 800, 600, SDL_WINDOW_VULKAN);
-        //// Get window properties
-        //SDL_PropertiesID props = SDL_GetWindowProperties(window);
-        //// Get HWND
-        //HWND hwnd = (HWND)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
-        //// Get HINSTANCE (the module handle)
-        //HINSTANCE hinstance = (HINSTANCE)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER, nullptr);
-        
-
-        // Create Vulkan-capable SDL window
-        SDL_Window* window = SDL_CreateWindow(
-            "Vulkan SDL3 Window",
-            800,
-            600,
-            SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE
-        );
     
-        if (!window) 
+    // Get window properties
+    SDL_PropertiesID window_props = SDL_GetWindowProperties(window);
+    HWND hwnd = (HWND)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
+    HINSTANCE hinstance = (HINSTANCE)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER, nullptr);
+
+    VkWin32SurfaceCreateInfoKHR surfaceInfo{
+        .sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
+        .hinstance = hinstance,
+        .hwnd = hwnd
+    };
+    
+    VK_CHECK(d.vkCreateWin32SurfaceKHR(context.instance, &surfaceInfo, VK_NULL_HANDLE, &context.surface));
+
+
+
+
+    // Main loop
+    bool running = true;
+    SDL_Event event;
+    while (running) 
+    {
+        while (SDL_PollEvent(&event)) 
         {
-            std::cerr << "SDL_CreateWindow Error: " << __FILE__ << ":" << __LINE__  << " " << SDL_GetError() << std::endl;
-        }
-        else
-        {
-            // Main loop
-            bool running = true;
-            SDL_Event event;
-            while (running) 
+            if (event.type == SDL_EVENT_QUIT) 
             {
-                while (SDL_PollEvent(&event)) 
-                {
-                    if (event.type == SDL_EVENT_QUIT) 
-                    {
-                        running = false;
-                    }
-                }
+                running = false;
             }
         }
-    
-        SDL_DestroyWindow(window);
-        SDL_Quit();
     }
+    
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+  
 
-
-
-
+    if (context.surface)
+    {
+        d.vkDestroySurfaceKHR(context.instance, context.surface, nullptr);
+        context.surface = VK_NULL_HANDLE;
+    }
     if (context.instance)
     {
-        fvkDestroyInstance(context.instance, VK_NULL_HANDLE);
+        d.vkDestroyInstance(context.instance, nullptr);
         context.instance = VK_NULL_HANDLE;
     }
 
-    // if (vulkanLib)
-    // {
-    //     FreeLibrary(vulkanLib);
-    // }
+    d.freeLib();
 
     std::cout << "DONE\n";
+    return 0;
 }
