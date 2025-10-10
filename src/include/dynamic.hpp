@@ -25,9 +25,15 @@ struct Dynamic
 
     //GLOBAL LEVEL FUNCTIONS
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = VK_NULL_HANDLE;
+    PFN_vkEnumerateInstanceLayerProperties vkEnumerateInstanceLayerProperties = VK_NULL_HANDLE;
+    PFN_vkEnumerateInstanceExtensionProperties vkEnumerateInstanceExtensionProperties = VK_NULL_HANDLE;
     PFN_vkCreateInstance vkCreateInstance = VK_NULL_HANDLE;
     //INSTANCE LEVEL FUNCTIONS
     PFN_vkDestroyInstance vkDestroyInstance = VK_NULL_HANDLE;
+#ifdef _DEBUG
+    PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = VK_NULL_HANDLE;
+    PFN_vkDestroyDebugUtilsMessengerEXT vkDestroyDebugUtilsMessengerEXT = VK_NULL_HANDLE;
+#endif
 #ifdef VK_USE_PLATFORM_WIN32_KHR
     PFN_vkCreateWin32SurfaceKHR vkCreateWin32SurfaceKHR = VK_NULL_HANDLE;
 #endif
