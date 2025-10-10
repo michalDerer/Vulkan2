@@ -12,8 +12,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 
 # Collect source files
 set(SOURCES
+    src/include/dynamic.hpp
+    src/include/macross.hpp
     src/main.cpp
-    #src/math.cpp
+    src/dynamic.cpp
 )
 
 

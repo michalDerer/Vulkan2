@@ -3,7 +3,7 @@
 #include <iostream>
 //#include <vector>
 
-//definovane v CMakeLists.txt
+//definovane v nastaveniach
 // #define VK_NO_PROTOTYPES
 // #define VK_USE_PLATFORM_WIN32_KHR
 #include "vulkan/vulkan.h"
@@ -11,37 +11,37 @@
 #include "SDL3/SDL.h"
 #include "SDL3/SDL_vulkan.h"
 
-//Use a Loader Library volk namiesto rucneho loadu metod
+#include "macross.hpp"
 
 
-#ifndef _DEBUG
-#define VK_CHECK(value)  
-#else
-#define VK_CHECK(value)                                                                                     \
-do {                                                                                                        \
-    VkResult vValue = value;                                                                                \
-    if (vValue != VK_SUCCESS)                                                                               \
-    {                                                                                                       \
-        /*fprintf(stderr, "Vulkan error: %d at %s:%d\n", vValue, __FILE__, __LINE__);*/                     \
-        std::cerr << "Vulkan error: " << vValue << " at " << __FILE__ << ":" << __LINE__ << std::endl;      \
-        abort();                                                                                            \
-    }                                                                                                       \
-} while (0)                                                                                            
-#endif
+// #ifndef _DEBUG
+// #define VK_CHECK(value)  
+// #else
+// #define VK_CHECK(value)                                                                                     \
+// do {                                                                                                        \
+//     VkResult vValue = value;                                                                                \
+//     if (vValue != VK_SUCCESS)                                                                               \
+//     {                                                                                                       \
+//         /*fprintf(stderr, "Vulkan error: %d at %s:%d\n", vValue, __FILE__, __LINE__);*/                     \
+//         std::cerr << "Vulkan error: " << vValue << " at " << __FILE__ << ":" << __LINE__ << std::endl;      \
+//         abort();                                                                                            \
+//     }                                                                                                       \
+// } while (0)                                                                                            
+// #endif
 
-#ifndef _DEBUG
-#define NULL_CHECK(p)  
-#else
-#define NULL_CHECK(p)                                                                                       \
-do {                                                                                                        \
-    void* pP = p;                                                                                           \
-    if (pP == NULL)                                                                                         \
-    {                                                                                                       \
-        std::cerr << "Null error at " << __FILE__ << ":" << __LINE__ << std::endl;                          \
-        abort();                                                                                            \
-    }                                                                                                       \
-} while (0)
-#endif
+// #ifndef _DEBUG
+// #define NULL_CHECK(p)  
+// #else
+// #define NULL_CHECK(p)                                                                                       \
+// do {                                                                                                        \
+//     void* pP = p;                                                                                           \
+//     if (pP == NULL)                                                                                         \
+//     {                                                                                                       \
+//         std::cerr << "Null error at " << __FILE__ << ":" << __LINE__ << std::endl;                          \
+//         abort();                                                                                            \
+//     }                                                                                                       \
+// } while (0)
+// #endif
 
 
 
@@ -62,12 +62,8 @@ struct Context
 
 int main ()
 {
-    HMODULE vulkanLib = LoadLibraryA("vulkan-1.dll");
-    if (!vulkanLib) 
-    {
-        std::cerr << "Failed to load vulkan-1.dll" << std::endl;
-        return 1;
-    }
+    //HINSTANCE vulkanLib = LoadLibrary("vulkan-1.dll");
+    //NULL_CHECK(vulkanLib);
 
     PFN_vkGetInstanceProcAddr fvkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)GetProcAddress(vulkanLib, "vkGetInstanceProcAddr");
     NULL_CHECK(fvkGetInstanceProcAddr);
@@ -92,7 +88,7 @@ int main ()
     Context context{};
     //VkInstance instance = VK_NULL_HANDLE;
 
-
+ 
 
     VkApplicationInfo appInfo{ 
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
@@ -183,10 +179,10 @@ int main ()
         context.instance = VK_NULL_HANDLE;
     }
 
-    if (vulkanLib)
-    {
-        FreeLibrary(vulkanLib);
-    }
+    // if (vulkanLib)
+    // {
+    //     FreeLibrary(vulkanLib);
+    // }
 
     std::cout << "DONE\n";
 }
