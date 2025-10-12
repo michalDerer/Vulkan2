@@ -21,6 +21,21 @@
         "VCPKG_TARGET_TRIPLET": "x64-windows"
 
       }
+    },
+    {
+      "name": "vs2022-x64-release",
+      "displayName": "Visual Studio 2022 x64 Release",
+      "description": "Generate Visual Studio 2022 project files for x64 Release build",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build/vs2022-x64-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        
+        "CMAKE_TOOLCHAIN_FILE": "vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-windows"
+
+      }
     }
   ],
 
@@ -30,6 +45,12 @@
       "configurePreset": "vs2022-x64-debug",
       "description": "Build the Debug x64 configuration using Visual Studio 2022",
       "configuration": "Debug"
+    },
+    {
+      "name": "vs2022-x64-release",
+      "configurePreset": "vs2022-x64-release",
+      "description": "Build the Release x64 configuration using Visual Studio 2022",
+      "configuration": "Release"
     }
   ]
 }

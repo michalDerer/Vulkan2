@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 # Collect source files
 set(SOURCES
     src/include/dynamic.hpp
-    src/include/macross.hpp
+    src/include/macros.hpp
     src/main.cpp
     src/dynamic.cpp
 )
@@ -35,7 +35,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/inclu
 find_package(SDL3 CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
 
- find_package(glm CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
 # Or use the header-only version
 #find_package(glm CONFIG REQUIRED)

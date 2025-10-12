@@ -13,7 +13,7 @@ do {                                                                            
         std::cerr << "Vulkan error: " << vValue << " at " << __FILE__ << ":" << __LINE__ << std::endl;      \
         abort();                                                                                            \
     }                                                                                                       \
-} while (0)                                                                                            
+} while (0);                                                                                       
 #endif
 
 #ifndef _DEBUG
@@ -27,5 +27,5 @@ do {                                                                            
         std::cerr << "Null error at " << __FILE__ << ":" << __LINE__ << std::endl;                          \
         abort();                                                                                            \
     }                                                                                                       \
-} while (0)
+} while (0);
 #endif

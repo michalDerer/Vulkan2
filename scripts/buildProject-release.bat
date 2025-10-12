@@ -1,0 +1,1 @@
+cmake -S .. --build --preset vs2022-x64-release

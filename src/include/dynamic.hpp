@@ -5,12 +5,22 @@
 #include "vulkan/vulkan.h"
 
 
+#define MEMBER(name) PFN_##name name = VK_NULL_HANDLE;
+
+
 struct Dynamic
 {
-    public:
+private:
     // Pointer na nacitanu kniznicu. 
     // HMODULE alebo HINSTANCE je to to iste.
     HMODULE lib = nullptr;
+
+ public:
+    void loadLib(const char* path);
+    HMODULE get_lib() const;
+    void freeLib();
+
+    void loadInstanceLevel(VkInstance& instance);
 
 
     /*
@@ -24,25 +34,23 @@ struct Dynamic
 
 
     //GLOBAL LEVEL FUNCTIONS
-    PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = VK_NULL_HANDLE;
-    PFN_vkEnumerateInstanceLayerProperties vkEnumerateInstanceLayerProperties = VK_NULL_HANDLE;
-    PFN_vkEnumerateInstanceExtensionProperties vkEnumerateInstanceExtensionProperties = VK_NULL_HANDLE;
-    PFN_vkCreateInstance vkCreateInstance = VK_NULL_HANDLE;
+    MEMBER(vkGetInstanceProcAddr)
+    MEMBER(vkEnumerateInstanceLayerProperties)
+    MEMBER(vkEnumerateInstanceExtensionProperties)
+    MEMBER(vkCreateInstance)
     //INSTANCE LEVEL FUNCTIONS
-    PFN_vkDestroyInstance vkDestroyInstance = VK_NULL_HANDLE;
+    MEMBER(vkDestroyInstance)
+    MEMBER(vkEnumeratePhysicalDevices)
+    MEMBER(vkGetPhysicalDeviceQueueFamilyProperties2)
 #ifdef _DEBUG
-    PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = VK_NULL_HANDLE;
-    PFN_vkDestroyDebugUtilsMessengerEXT vkDestroyDebugUtilsMessengerEXT = VK_NULL_HANDLE;
+    MEMBER(vkCreateDebugUtilsMessengerEXT)
+    MEMBER(vkDestroyDebugUtilsMessengerEXT)
 #endif
 #ifdef VK_USE_PLATFORM_WIN32_KHR
-    PFN_vkCreateWin32SurfaceKHR vkCreateWin32SurfaceKHR = VK_NULL_HANDLE;
+    MEMBER(vkCreateWin32SurfaceKHR)
 #endif
-    PFN_vkDestroySurfaceKHR vkDestroySurfaceKHR = VK_NULL_HANDLE;
-
-
-    public:
-    void loadLib(const char* path);
-    void freeLib();
-
-    void loadInstanceLevel(VkInstance& instance);
+    MEMBER(vkDestroySurfaceKHR)
 };
+
+
+#undef MEMBER

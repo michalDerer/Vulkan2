@@ -1,6 +1,21 @@
 
-#include "macross.hpp"
+#include "macros.hpp"
 #include "dynamic.hpp"
+
+
+#define MEMBER(name) PFN_##name name = VK_NULL_HANDLE;
+
+#define GET_INSTA_PROC_ADR_G(name)                                          \
+do {                                                                        \
+    name = (PFN_##name)vkGetInstanceProcAddr(VK_NULL_HANDLE, #name);        \
+    NULL_CHECK(name)                                                        \
+} while (0);
+
+#define GET_INSTA_PROC_ADR(handle, name)                                    \
+do {                                                                        \
+    name = (PFN_##name)vkGetInstanceProcAddr(handle, #name);                \
+    NULL_CHECK(name)                                                        \
+} while (0);
 
 
 void Dynamic::loadLib(const char* path)
@@ -8,21 +23,20 @@ void Dynamic::loadLib(const char* path)
     if (!lib)
     {
         lib = LoadLibraryA(path);
-        NULL_CHECK(lib);
+        NULL_CHECK(lib)
 
         vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)GetProcAddress(lib, "vkGetInstanceProcAddr");
-        NULL_CHECK(vkGetInstanceProcAddr);
-
-        vkEnumerateInstanceLayerProperties = (PFN_vkEnumerateInstanceLayerProperties)vkGetInstanceProcAddr(VK_NULL_HANDLE, "vkEnumerateInstanceLayerProperties");
-        NULL_CHECK(vkEnumerateInstanceLayerProperties);
-
-        vkEnumerateInstanceExtensionProperties = (PFN_vkEnumerateInstanceExtensionProperties)vkGetInstanceProcAddr(VK_NULL_HANDLE, "vkEnumerateInstanceExtensionProperties");
-        NULL_CHECK(vkEnumerateInstanceExtensionProperties);
-
-        vkCreateInstance = (PFN_vkCreateInstance)vkGetInstanceProcAddr(VK_NULL_HANDLE, "vkCreateInstance");
-        NULL_CHECK(vkCreateInstance);
+        NULL_CHECK(vkGetInstanceProcAddr)
         
+        GET_INSTA_PROC_ADR_G(vkEnumerateInstanceLayerProperties) 
+        GET_INSTA_PROC_ADR_G(vkEnumerateInstanceExtensionProperties)
+        GET_INSTA_PROC_ADR_G(vkCreateInstance)
     }
+}
+
+HMODULE Dynamic::get_lib() const
+{
+    return lib;
 }
 
 void Dynamic::freeLib()
@@ -32,44 +46,45 @@ void Dynamic::freeLib()
         FreeLibrary(lib);
         lib = nullptr;
         
-        //global level functions
-        vkGetInstanceProcAddr = VK_NULL_HANDLE;
-        vkEnumerateInstanceLayerProperties = VK_NULL_HANDLE;
-        vkEnumerateInstanceExtensionProperties = VK_NULL_HANDLE;
-        vkCreateInstance = VK_NULL_HANDLE;
-        //instance level functions
-        vkDestroyInstance = VK_NULL_HANDLE;
+        //GLOBAL LEVEL FUNCTIONS
+        MEMBER(vkGetInstanceProcAddr)
+        MEMBER(vkEnumerateInstanceLayerProperties)
+        MEMBER(vkEnumerateInstanceExtensionProperties)
+        MEMBER(vkCreateInstance)
+        //INSTANCE LEVEL FUNCTIONS
+        MEMBER(vkDestroyInstance)
+        MEMBER(vkEnumeratePhysicalDevices)
+        MEMBER(vkGetPhysicalDeviceQueueFamilyProperties2)
 #ifdef _DEBUG
-        vkCreateDebugUtilsMessengerEXT = VK_NULL_HANDLE;
-        vkDestroyDebugUtilsMessengerEXT = VK_NULL_HANDLE;
+        MEMBER(vkCreateDebugUtilsMessengerEXT)
+        MEMBER(vkDestroyDebugUtilsMessengerEXT)
 #endif
 #ifdef VK_USE_PLATFORM_WIN32_KHR
-        vkCreateWin32SurfaceKHR = VK_NULL_HANDLE;
+        MEMBER(vkCreateWin32SurfaceKHR)
 #endif
-        vkDestroySurfaceKHR = VK_NULL_HANDLE;
+        MEMBER(vkDestroySurfaceKHR)
     }
 }
 
 void Dynamic::loadInstanceLevel(VkInstance& instance)
 {
-    vkDestroyInstance = (PFN_vkDestroyInstance)vkGetInstanceProcAddr(instance, "vkDestroyInstance");
-    NULL_CHECK(vkDestroyInstance);
+    GET_INSTA_PROC_ADR(instance, vkDestroyInstance)
+    GET_INSTA_PROC_ADR(instance, vkEnumeratePhysicalDevices)
+    GET_INSTA_PROC_ADR(instance, vkGetPhysicalDeviceQueueFamilyProperties2)
 
 #ifdef _DEBUG
-    vkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-    NULL_CHECK(vkCreateDebugUtilsMessengerEXT);
-    vkDestroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-    NULL_CHECK(vkDestroyDebugUtilsMessengerEXT);
+    GET_INSTA_PROC_ADR(instance, vkCreateDebugUtilsMessengerEXT)
+    GET_INSTA_PROC_ADR(instance, vkDestroyDebugUtilsMessengerEXT)
 #endif
 
 #ifdef VK_USE_PLATFORM_WIN32_KHR
-    vkCreateWin32SurfaceKHR = (PFN_vkCreateWin32SurfaceKHR)vkGetInstanceProcAddr(instance, "vkCreateWin32SurfaceKHR");
-    NULL_CHECK(vkCreateWin32SurfaceKHR);
+    GET_INSTA_PROC_ADR(instance, vkCreateWin32SurfaceKHR)
 #endif
 
-    vkDestroySurfaceKHR = (PFN_vkDestroySurfaceKHR)vkGetInstanceProcAddr(instance, "vkDestroySurfaceKHR");
-    NULL_CHECK(vkDestroySurfaceKHR);
-
-
-
+    GET_INSTA_PROC_ADR(instance, vkDestroySurfaceKHR)
 }
+
+
+#undef MEMBER
+#undef GET_INSTA_PROC_ADR_G
+#undef GET_INSTA_PROC_ADR

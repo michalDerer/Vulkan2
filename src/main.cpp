@@ -11,7 +11,7 @@
 #include "SDL3/SDL.h"
 #include "SDL3/SDL_vulkan.h"
 
-#include "macross.hpp"
+#include "macros.hpp"
 #include "dynamic.hpp"
 
 
@@ -67,9 +67,9 @@ int main()
 
 #ifdef _DEBUG
     uint32_t instaLaPropertiesCount;
-    VK_CHECK(d.vkEnumerateInstanceLayerProperties(&instaLaPropertiesCount, VK_NULL_HANDLE));
+    VK_CHECK(d.vkEnumerateInstanceLayerProperties(&instaLaPropertiesCount, VK_NULL_HANDLE))
     std::vector<VkLayerProperties> instaLaProperties{ instaLaPropertiesCount };
-    VK_CHECK(d.vkEnumerateInstanceLayerProperties(&instaLaPropertiesCount, instaLaProperties.data()));
+    VK_CHECK(d.vkEnumerateInstanceLayerProperties(&instaLaPropertiesCount, instaLaProperties.data()))
 
     std::cout << "Awalyable instance layers:\n";
     for (const auto& instaLaProperty : instaLaProperties)
@@ -86,9 +86,9 @@ int main()
     for (const auto& instaLa : instanceLayers)
     {
         uint32_t instaLaExPropertiesCount;
-        VK_CHECK(d.vkEnumerateInstanceExtensionProperties(instaLa, &instaLaExPropertiesCount, VK_NULL_HANDLE));
+        VK_CHECK(d.vkEnumerateInstanceExtensionProperties(instaLa, &instaLaExPropertiesCount, VK_NULL_HANDLE))
         std::vector<VkExtensionProperties> instaLaExProperties{ instaLaExPropertiesCount };
-        VK_CHECK(d.vkEnumerateInstanceExtensionProperties(instaLa, &instaLaExPropertiesCount, instaLaExProperties.data()));
+        VK_CHECK(d.vkEnumerateInstanceExtensionProperties(instaLa, &instaLaExPropertiesCount, instaLaExProperties.data()))
 
         for (const auto& instaLaExProperty : instaLaExProperties)
         {
@@ -137,7 +137,7 @@ int main()
         .enabledExtensionCount = static_cast<uint32_t>(instanceExtensions.size()),
         .ppEnabledExtensionNames = instanceExtensions.data()};
 
-    VK_CHECK(d.vkCreateInstance(&instanceInfo, VK_NULL_HANDLE, &context.instance));
+    VK_CHECK(d.vkCreateInstance(&instanceInfo, VK_NULL_HANDLE, &context.instance))
 
 
     d.loadInstanceLevel(context.instance);
@@ -150,7 +150,7 @@ int main()
         .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT,
         .pfnUserCallback = debugCallback};
 
-    VK_CHECK(d.vkCreateDebugUtilsMessengerEXT(context.instance, &debugInfo, VK_NULL_HANDLE, &context.debugUtilsMessengerEXT));
+    VK_CHECK(d.vkCreateDebugUtilsMessengerEXT(context.instance, &debugInfo, VK_NULL_HANDLE, &context.debugUtilsMessengerEXT))
 #endif
 
 
@@ -188,7 +188,43 @@ int main()
         .hwnd = hwnd
     };
     
-    VK_CHECK(d.vkCreateWin32SurfaceKHR(context.instance, &surfaceInfo, VK_NULL_HANDLE, &context.surface));
+    VK_CHECK(d.vkCreateWin32SurfaceKHR(context.instance, &surfaceInfo, VK_NULL_HANDLE, &context.surface))
+
+
+    // Get physical device
+    {
+        uint32_t phDevicesCount;
+        VK_CHECK(d.vkEnumeratePhysicalDevices(context.instance, &phDevicesCount, VK_NULL_HANDLE))
+        std::vector<VkPhysicalDevice> phDevices{ phDevicesCount };
+        VK_CHECK(d.vkEnumeratePhysicalDevices(context.instance, &phDevicesCount, phDevices.data()))
+
+        for (const auto& phDevice : phDevices)
+        {
+            uint32_t phDeviceQFamilyPropsCount;
+            d.vkGetPhysicalDeviceQueueFamilyProperties2(phDevice, &phDeviceQFamilyPropsCount, VK_NULL_HANDLE);
+            std::vector<VkQueueFamilyProperties2> phDeviceQFamilyProps{ phDeviceQFamilyPropsCount, {
+                .sType = VK_STRUCTURE_TYPE_QUEUE_FAMILY_PROPERTIES_2 } };
+            d.vkGetPhysicalDeviceQueueFamilyProperties2(phDevice, &phDeviceQFamilyPropsCount, phDeviceQFamilyProps.data());
+            
+            std::cout << "\n";
+            for (int i = 0; i < phDeviceQFamilyProps.size(); i++)
+            {
+                std::cout << "Family idx: " << i << " family count: " << phDeviceQFamilyProps[i].queueFamilyProperties.queueCount << "\n";
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     // Main loop
