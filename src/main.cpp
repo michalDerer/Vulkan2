@@ -2,6 +2,7 @@
 //#include <windows.h>
 //#include <iostream>
 #include <vector>
+#include <string>
 
 //defines pre vulkan header setnute v CMakeLists
 // #define VK_NO_PROTOTYPES
@@ -34,13 +35,29 @@ struct Context
     VkDebugUtilsMessengerEXT debugUtilsMessengerEXT = VK_NULL_HANDLE;
 #endif
     VkSurfaceKHR surface = VK_NULL_HANDLE;
-    VkPhysicalDevice pDvecie = VK_NULL_HANDLE;
-    VkDevice device = VK_NULL_HANDLE;
+    VkSwapchainKHR swapchain = VK_NULL_HANDLE;
 
-    int renderQueueFamilyIdx = -1;
+    VkPhysicalDevice pDvecie = VK_NULL_HANDLE;
+    int pDeviceRenderQueueFamilyIdx = -1;
+
+    VkDevice device = VK_NULL_HANDLE;
     VkQueue queue = VK_NULL_HANDLE;
 };
 
+
+std::string apiVersionToString(uint32_t apiVersion)
+{
+    std::string s{std::to_string(VK_API_VERSION_VARIANT(apiVersion))}; 
+    //s.append(std::to_string(VK_API_VERSION_VARIANT(apiVersion)));
+    s.append(".");
+    s.append(std::to_string(VK_API_VERSION_MAJOR(apiVersion)));
+    s.append(".");
+    s.append(std::to_string(VK_API_VERSION_MINOR(apiVersion)));
+    s.append(".");
+    s.append(std::to_string(VK_API_VERSION_PATCH(apiVersion)));
+
+    return s;
+}
 
 int main()
 {
@@ -74,7 +91,7 @@ int main()
     std::cout << "Awalyable instance layers:\n";
     for (const auto& instaLaProperty : instaLaProperties)
     {
-        std::cout << instaLaProperty.layerName << " " << instaLaProperty.specVersion << "\n";
+        std::cout << instaLaProperty.layerName << " " <<  apiVersionToString(instaLaProperty.specVersion) << "\n";
 
         if (strcmp(instaLaProperty.layerName, "VK_LAYER_KHRONOS_validation") == 0)
         {
@@ -206,18 +223,99 @@ int main()
                 .sType = VK_STRUCTURE_TYPE_QUEUE_FAMILY_PROPERTIES_2 } };
             d.vkGetPhysicalDeviceQueueFamilyProperties2(phDevice, &phDeviceQFamilyPropsCount, phDeviceQFamilyProps.data());
             
-            std::cout << "\n";
+            VkPhysicalDeviceProperties2 phDeviceProperties{
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+            d.vkGetPhysicalDeviceProperties2(phDevice, &phDeviceProperties);
+
+            std::cout << "\n" << phDeviceProperties.properties.deviceName << " " << apiVersionToString(phDeviceProperties.properties.apiVersion) << "\n";
             for (int i = 0; i < phDeviceQFamilyProps.size(); i++)
             {
-                std::cout << "Family idx: " << i << " family count: " << phDeviceQFamilyProps[i].queueFamilyProperties.queueCount << "\n";
+                VkBool32 surfaceSupported = false;
+                VK_CHECK(d.vkGetPhysicalDeviceSurfaceSupportKHR(phDevice, i, context.surface, &surfaceSupported))           //To determine whether a queue family of a physical device supports presentation to a given surface
+                VkBool32 surfaceSupportedWin = d.vkGetPhysicalDeviceWin32PresentationSupportKHR(phDevice, i);               //To determine whether a queue family of a physical device supports presentation to the Microsoft Windows desktop
+                VkBool32 graphicsBIT = phDeviceQFamilyProps[i].queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT;
+                VkBool32 transferBIT = phDeviceQFamilyProps[i].queueFamilyProperties.queueFlags & VK_QUEUE_TRANSFER_BIT;
+                bool selected = false;
+
+                if (surfaceSupported && surfaceSupportedWin && graphicsBIT && transferBIT && context.pDvecie == VK_NULL_HANDLE)
+                {
+                    context.pDvecie = phDevice;
+                    context.pDeviceRenderQueueFamilyIdx = i;
+                    selected = true;
+                }
+
+                std::cout << "Family idx: " << i << 
+                    " family count: " << phDeviceQFamilyProps[i].queueFamilyProperties.queueCount << 
+                    " surfaceSupported: " << ((surfaceSupported) ? "true" : "false") <<
+                    " surfaceSupportedWin: " << ((surfaceSupportedWin) ? "true" : "false") <<
+                    " graphics BIT: " << ((graphicsBIT) ? "true" : "false") <<
+                    " transfer BIT: " << ((transferBIT) ? "true" : "false") <<
+                    (selected ? " SELECTED" : "") <<
+                    "\n";
             }
         }
     }
 
+    // Create device with queue and get queue handle
+    {
+        float queuePriorities[1] = {1.0f};
 
+        VkDeviceQueueCreateInfo cQueueInfo{
+            .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+            .queueFamilyIndex = static_cast<uint32_t>(context.pDeviceRenderQueueFamilyIdx),
+            .queueCount = 1,
+            .pQueuePriorities = queuePriorities};
 
+        VkDeviceCreateInfo deviceInfo{
+            .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+            .queueCreateInfoCount = 1,
+            .pQueueCreateInfos = &cQueueInfo};
 
+        VK_CHECK(d.vkCreateDevice(context.pDvecie, &deviceInfo, VK_NULL_HANDLE, &context.device))
 
+        VkDeviceQueueInfo2 gQueueInfo {
+            .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_INFO_2,
+            .queueFamilyIndex = static_cast<uint32_t>(context.pDeviceRenderQueueFamilyIdx),
+            .queueIndex = 0};
+
+        d.vkGetDeviceQueue2(context.device, &gQueueInfo, &context.queue);
+    }
+
+    // Create Swapchain
+    {
+        VkSurfaceCapabilitiesKHR surfaceCapabilities{};
+        VK_CHECK(d.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(context.pDvecie, context.surface, &surfaceCapabilities))
+
+        std::cout << "\nExtend:" << surfaceCapabilities.currentExtent.width << "x" << surfaceCapabilities.currentExtent.height;
+        if (surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) 
+            std::cout << "\nSurface supported usage: VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT";
+
+        // PFN_vkGetPhysicalDeviceSurfaceSupportKHR
+        // PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR
+        // PFN_vkGetPhysicalDeviceSurfaceFormatsKHR
+        // PFN_vkGetPhysicalDeviceSurfacePresentModesKHR
+
+        // VkSwapchainCreateInfoKHR cSwapchainInfo{
+        //     .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+        //     .surface = context.surface,
+        //     // uint32_t                         minImageCount;
+        //     // VkFormat                         imageFormat;
+        //     // VkColorSpaceKHR                  imageColorSpace;
+        //     // VkExtent2D                       imageExtent;
+        //     // uint32_t                         imageArrayLayers;
+        //     .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+        //     .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,                  //ak si dobre pametam malo by to znamenat ze exluzivne len jedna qFamily alebo q bude robit so swapchainou
+        //     // uint32_t                         queueFamilyIndexCount;
+        //     // const uint32_t*                  pQueueFamilyIndices;
+        //     // VkSurfaceTransformFlagBitsKHR    preTransform;
+        //     .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+        //     // VkPresentModeKHR                 presentMode;
+        //     // VkBool32                         clipped;
+        //     // VkSwapchainKHR                   oldSwapchain;
+        // };
+
+        //VK_CHECK(d.vkCreateSwapchainKHR(context.device, &cSwapchainInfo, VK_NULL_HANDLE, &context.swapchain))
+    }
 
 
 
@@ -245,6 +343,10 @@ int main()
     SDL_Quit();
   
 
+    if (context.device)
+    {
+        d.vkDestroyDevice(context.device, VK_NULL_HANDLE);
+    }
     if (context.surface)
     {
         d.vkDestroySurfaceKHR(context.instance, context.surface, nullptr);

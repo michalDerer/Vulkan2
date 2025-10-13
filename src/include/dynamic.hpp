@@ -41,6 +41,7 @@ private:
     //INSTANCE LEVEL FUNCTIONS
     MEMBER(vkDestroyInstance)
     MEMBER(vkEnumeratePhysicalDevices)
+    MEMBER(vkGetPhysicalDeviceProperties2)
     MEMBER(vkGetPhysicalDeviceQueueFamilyProperties2)
 #ifdef _DEBUG
     MEMBER(vkCreateDebugUtilsMessengerEXT)
@@ -48,8 +49,16 @@ private:
 #endif
 #ifdef VK_USE_PLATFORM_WIN32_KHR
     MEMBER(vkCreateWin32SurfaceKHR)
+    MEMBER(vkGetPhysicalDeviceWin32PresentationSupportKHR)
 #endif
     MEMBER(vkDestroySurfaceKHR)
+    MEMBER(vkCreateDevice)
+    MEMBER(vkDestroyDevice)
+    MEMBER(vkGetDeviceQueue2)
+    MEMBER(vkGetPhysicalDeviceSurfaceSupportKHR)
+    MEMBER(vkGetPhysicalDeviceSurfaceCapabilitiesKHR)
+    MEMBER(vkCreateSwapchainKHR)
+    MEMBER(vkDestroySwapchainKHR)
 };
 
 

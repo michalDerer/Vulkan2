@@ -54,6 +54,7 @@ void Dynamic::freeLib()
         //INSTANCE LEVEL FUNCTIONS
         MEMBER(vkDestroyInstance)
         MEMBER(vkEnumeratePhysicalDevices)
+        MEMBER(vkGetPhysicalDeviceProperties2)
         MEMBER(vkGetPhysicalDeviceQueueFamilyProperties2)
 #ifdef _DEBUG
         MEMBER(vkCreateDebugUtilsMessengerEXT)
@@ -61,8 +62,16 @@ void Dynamic::freeLib()
 #endif
 #ifdef VK_USE_PLATFORM_WIN32_KHR
         MEMBER(vkCreateWin32SurfaceKHR)
+        MEMBER(vkGetPhysicalDeviceWin32PresentationSupportKHR)
 #endif
         MEMBER(vkDestroySurfaceKHR)
+        MEMBER(vkCreateDevice)
+        MEMBER(vkDestroyDevice)
+        MEMBER(vkGetDeviceQueue2)
+        MEMBER(vkGetPhysicalDeviceSurfaceSupportKHR)
+        MEMBER(vkGetPhysicalDeviceSurfaceCapabilitiesKHR)
+        MEMBER(vkCreateSwapchainKHR)
+        MEMBER(vkDestroySwapchainKHR)
     }
 }
 
@@ -70,6 +79,7 @@ void Dynamic::loadInstanceLevel(VkInstance& instance)
 {
     GET_INSTA_PROC_ADR(instance, vkDestroyInstance)
     GET_INSTA_PROC_ADR(instance, vkEnumeratePhysicalDevices)
+    GET_INSTA_PROC_ADR(instance, vkGetPhysicalDeviceProperties2)
     GET_INSTA_PROC_ADR(instance, vkGetPhysicalDeviceQueueFamilyProperties2)
 
 #ifdef _DEBUG
@@ -79,9 +89,17 @@ void Dynamic::loadInstanceLevel(VkInstance& instance)
 
 #ifdef VK_USE_PLATFORM_WIN32_KHR
     GET_INSTA_PROC_ADR(instance, vkCreateWin32SurfaceKHR)
+    GET_INSTA_PROC_ADR(instance, vkGetPhysicalDeviceWin32PresentationSupportKHR)
 #endif
 
     GET_INSTA_PROC_ADR(instance, vkDestroySurfaceKHR)
+    GET_INSTA_PROC_ADR(instance, vkCreateDevice)
+    GET_INSTA_PROC_ADR(instance, vkDestroyDevice)
+    GET_INSTA_PROC_ADR(instance, vkGetDeviceQueue2)
+    GET_INSTA_PROC_ADR(instance, vkGetPhysicalDeviceSurfaceSupportKHR)
+    GET_INSTA_PROC_ADR(instance, vkGetPhysicalDeviceSurfaceCapabilitiesKHR)
+    GET_INSTA_PROC_ADR(instance, vkCreateSwapchainKHR)
+    GET_INSTA_PROC_ADR(instance, vkDestroySwapchainKHR)
 }
 
 
