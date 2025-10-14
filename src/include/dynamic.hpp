@@ -16,19 +16,19 @@ private:
     // HMODULE alebo HINSTANCE je to to iste.
     HMODULE lib = nullptr;
 #elif defined(VK_USE_PLATFORM_XLIB_KHR)
-    //TODO: doplnit
     void* lib = nullptr;
 #endif
 
  public:
     void loadLib(const char* path);
+
 #ifdef VK_USE_PLATFORM_WIN32_KHR
     HMODULE get_lib() const;
 #elif defined(VK_USE_PLATFORM_XLIB_KHR)
-    //TODO: doplnit
+    void* get_lib() const;
 #endif
-    void freeLib();
 
+    void freeLib();
     void loadInstanceLevel(VkInstance& instance);
 
 
@@ -53,7 +53,7 @@ private:
     MEMBER(vkGetPhysicalDeviceProperties2)
     MEMBER(vkGetPhysicalDeviceQueueFamilyProperties2)
     
-#ifdef _DEBUG
+#ifdef DEBUG
     MEMBER(vkCreateDebugUtilsMessengerEXT)
     MEMBER(vkDestroyDebugUtilsMessengerEXT)
 #endif
@@ -62,7 +62,8 @@ private:
     MEMBER(vkCreateWin32SurfaceKHR)
     MEMBER(vkGetPhysicalDeviceWin32PresentationSupportKHR)
 #elif defined(VK_USE_PLATFORM_XLIB_KHR)
-    //TODO: doplnit
+    MEMBER(vkCreateXlibSurfaceKHR)
+    MEMBER(vkGetPhysicalDeviceXlibPresentationSupportKHR)
 #endif
 
     MEMBER(vkDestroySurfaceKHR)

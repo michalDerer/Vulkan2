@@ -18,7 +18,7 @@
 
 
 
-#ifdef _DEBUG
+#ifdef DEBUG
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageTypes, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
@@ -32,7 +32,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 struct Context
 {
     VkInstance instance = VK_NULL_HANDLE;
-#ifdef _DEBUG
+#ifdef DEBUG
     VkDebugUtilsMessengerEXT debugUtilsMessengerEXT = VK_NULL_HANDLE;
 #endif
     VkSurfaceKHR surface = VK_NULL_HANDLE;
@@ -68,7 +68,7 @@ int main()
     const char* sourceLib = "vulkan-1.dll";
 #elif defined(VK_USE_PLATFORM_XLIB_KHR)
     //TODO: dorobit
-    const char* sourceLib = "";
+    const char* sourceLib = "libvulkan.so.1";
 #endif
     d.loadLib(sourceLib);
 
@@ -89,7 +89,7 @@ int main()
     std::vector<const char*> instanceExtensions{};
 
 
-#ifdef _DEBUG
+#ifdef DEBUG
     uint32_t instaLaPropertiesCount;
     VK_CHECK(d.vkEnumerateInstanceLayerProperties(&instaLaPropertiesCount, VK_NULL_HANDLE))
     std::vector<VkLayerProperties> instaLaProperties{ instaLaPropertiesCount };
@@ -167,7 +167,7 @@ int main()
     d.loadInstanceLevel(context.instance);
 
 
-#ifdef _DEBUG
+#ifdef DEBUG
     VkDebugUtilsMessengerCreateInfoEXT debugInfo{
         .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
         .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT,
@@ -217,7 +217,13 @@ int main()
 
     VK_CHECK(d.vkCreateWin32SurfaceKHR(context.instance, &surfaceInfo, VK_NULL_HANDLE, &context.surface))
 #elif defined(VK_USE_PLATFORM_XLIB_KHR)
-    //TODO: dorobit
+        VkXlibSurfaceCreateInfoKHR surfaceInfo{
+            .sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR
+            //TODO: dorobit
+            //Display* .dpy,
+            /*Window .window*/ };
+
+    VK_CHECK(d.vkCreateXlibSurfaceKHR(context.instance, &surfaceInfo, VK_NULL_HANDLE, &context.surface))
 #endif
     
     // Get physical device
@@ -249,9 +255,11 @@ int main()
                 VkBool32 surfaceSupportedWin = 0;
 #ifdef VK_USE_PLATFORM_WIN32_KHR
                 //To determine whether a queue family of a physical device supports presentation to the Microsoft Windows desktop
-                VkBool32 surfaceSupportedWin = d.vkGetPhysicalDeviceWin32PresentationSupportKHR(phDevice, i);
+                surfaceSupportedWin = d.vkGetPhysicalDeviceWin32PresentationSupportKHR(phDevice, i);
 #elif defined(VK_USE_PLATFORM_XLIB_KHR)
                 //TODO: dorobit
+                //To determine whether a queue family of a physical device supports presentation to the Microsoft Windows desktop
+                //surfaceSupportedWin = d.vkGetPhysicalDeviceXlibPresentationSupportKHR(phDevice, i, /* Display* */ &dpy, /* VisualID */ visualID)
 #endif
                 VkBool32 graphicsBIT = phDeviceQFamilyProps[i].queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT;
                 VkBool32 transferBIT = phDeviceQFamilyProps[i].queueFamilyProperties.queueFlags & VK_QUEUE_TRANSFER_BIT;
@@ -372,7 +380,7 @@ int main()
         d.vkDestroySurfaceKHR(context.instance, context.surface, nullptr);
         context.surface = VK_NULL_HANDLE;
     }
-#ifdef _DEBUG
+#ifdef DEBUG
     if (context.debugUtilsMessengerEXT)
     {
         d.vkDestroyDebugUtilsMessengerEXT(context.instance, context.debugUtilsMessengerEXT, nullptr);

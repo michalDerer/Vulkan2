@@ -1,7 +1,7 @@
 
 #pragma once
 
-#ifndef _DEBUG
+#ifndef DEBUG
 #define VK_CHECK(value)  
 #else
 #define VK_CHECK(value)                                                                                     \
@@ -16,7 +16,7 @@ do {                                                                            
 } while (0);                                                                                       
 #endif
 
-#ifndef _DEBUG
+#ifndef DEBUG
 #define NULL_CHECK(p)  
 #else
 #define NULL_CHECK(p)                                                                                       \

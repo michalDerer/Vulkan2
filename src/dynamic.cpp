@@ -1,4 +1,6 @@
 
+#include <dlfcn.h>
+
 #include "macros.hpp"
 #include "dynamic.hpp"
 
@@ -22,18 +24,31 @@ void Dynamic::loadLib(const char* path)
 {
     if (!lib)
     {
-#if VK_USE_PLATFORM_WIN32_KHR
+
+        #if VK_USE_PLATFORM_WIN32_KHR
         lib = LoadLibraryA(path);
 #elif defined(VK_USE_PLATFORM_XLIB_KHR)
-    //TODO: doplnit
+        lib = dlopen(path, RTLD_NOW | RTLD_LOCAL);
+
+        if (!lib) 
+        {
+            std::cerr << "Cannot open library: " << dlerror() << '\n';
+        }
 #endif
+
         NULL_CHECK(lib)
 
 #if VK_USE_PLATFORM_WIN32_KHR
         vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)GetProcAddress(lib, "vkGetInstanceProcAddr");
 #elif defined(VK_USE_PLATFORM_XLIB_KHR)
-    //TODO: doplnit
+        vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)dlsym(lib, "vkGetInstanceProcAddr");
+
+        if (!vkGetInstanceProcAddr)
+        {
+            std::cerr << "Cannot load symbol 'vkGetInstanceProcAddr': " << dlerror() << '\n';
+        }
 #endif
+
         NULL_CHECK(vkGetInstanceProcAddr)
         
         GET_INSTA_PROC_ADR_G(vkEnumerateInstanceLayerProperties) 
@@ -48,7 +63,10 @@ HMODULE Dynamic::get_lib() const
     return lib;
 }
 #elif defined(VK_USE_PLATFORM_XLIB_KHR)
-    //TODO: doplnit
+void* Dynamic::get_lib() const
+{
+    return lib;
+}
 #endif
 
 
@@ -59,7 +77,7 @@ void Dynamic::freeLib()
 #if VK_USE_PLATFORM_WIN32_KHR
         FreeLibrary(lib);
 #elif defined(VK_USE_PLATFORM_XLIB_KHR)
-    //TODO: doplnit
+        dlclose(lib);
 #endif
         lib = nullptr;
         
@@ -74,7 +92,7 @@ void Dynamic::freeLib()
         MEMBER(vkGetPhysicalDeviceProperties2)
         MEMBER(vkGetPhysicalDeviceQueueFamilyProperties2)
         
-#ifdef _DEBUG
+#ifdef DEBUG
         MEMBER(vkCreateDebugUtilsMessengerEXT)
         MEMBER(vkDestroyDebugUtilsMessengerEXT)
 #endif
@@ -83,7 +101,8 @@ void Dynamic::freeLib()
         MEMBER(vkCreateWin32SurfaceKHR)
         MEMBER(vkGetPhysicalDeviceWin32PresentationSupportKHR)
 #elif defined(VK_USE_PLATFORM_XLIB_KHR)
-    //TODO: doplnit
+        MEMBER(vkCreateXlibSurfaceKHR)
+        MEMBER(vkGetPhysicalDeviceXlibPresentationSupportKHR)
 #endif
 
         MEMBER(vkDestroySurfaceKHR)
@@ -104,7 +123,7 @@ void Dynamic::loadInstanceLevel(VkInstance& instance)
     GET_INSTA_PROC_ADR(instance, vkGetPhysicalDeviceProperties2)
     GET_INSTA_PROC_ADR(instance, vkGetPhysicalDeviceQueueFamilyProperties2)
 
-#ifdef _DEBUG
+#ifdef DEBUG
     GET_INSTA_PROC_ADR(instance, vkCreateDebugUtilsMessengerEXT)
     GET_INSTA_PROC_ADR(instance, vkDestroyDebugUtilsMessengerEXT)
 #endif
@@ -113,7 +132,8 @@ void Dynamic::loadInstanceLevel(VkInstance& instance)
     GET_INSTA_PROC_ADR(instance, vkCreateWin32SurfaceKHR)
     GET_INSTA_PROC_ADR(instance, vkGetPhysicalDeviceWin32PresentationSupportKHR)
 #elif defined(VK_USE_PLATFORM_XLIB_KHR)
-    //TODO: doplnit
+    GET_INSTA_PROC_ADR(instance, vkCreateXlibSurfaceKHR)
+    GET_INSTA_PROC_ADR(instance, vkGetPhysicalDeviceXlibPresentationSupportKHR)
 #endif
 
     GET_INSTA_PROC_ADR(instance, vkDestroySurfaceKHR)

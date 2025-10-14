@@ -6,10 +6,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 
 
-# Add include directory
-#include_directories(include)
-#include_directories(${CMAKE_SOURCE_DIR}/include))
-
 # Collect source files
 set(SOURCES
     src/include/dynamic.hpp
@@ -24,13 +20,20 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 
 
 
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE DEBUG)
+elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE RELEASE)
+else()
+    message(WARNING "Unknown build type ${CMAKE_BUILD_TYPE}")
+endif()
+
 target_compile_definitions(${PROJECT_NAME} PRIVATE VK_NO_PROTOTYPES)
 if(WIN32)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_WIN32_KHR)
 elseif(UNIX)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_XLIB_KHR)
 endif()
-
 
 
 #${CMAKE_CURRENT_SOURCE_DIR}
