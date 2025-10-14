@@ -21,7 +21,7 @@ do {                                                                            
 #else
 #define NULL_CHECK(p)                                                                                       \
 do {                                                                                                        \
-    void* pP = p;                                                                                           \
+    void* pP = (void*)p;                                                                                           \
     if (pP == NULL)                                                                                         \
     {                                                                                                       \
         std::cerr << "Null error at " << __FILE__ << ":" << __LINE__ << std::endl;                          \
