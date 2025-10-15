@@ -1,8 +1,8 @@
 {
-  "version": 10,
+  "version": 9,
   "cmakeMinimumRequired": {
-    "major": 4,
-    "minor": 0,
+    "major": 3,
+    "minor": 30,
     "patch": 0
   },
 
@@ -31,11 +31,24 @@
       "binaryDir": "${sourceDir}/build/vs2022-x64-release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        
+
         "CMAKE_TOOLCHAIN_FILE": "vcpkg/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_TARGET_TRIPLET": "x64-windows"
 
       }
+    },
+    {
+	"name": "makefiles-arm64-linux-debug",
+	"displayName": "Makefiles arm64-linux Debug",
+	"description": "Generate Makefiles project files for arm64-linux Debug build",
+	"generator": "Unix Makefiles",
+	"binaryDir": "${sourceDir}/build/makefiles-arm64-linux-debug",
+	"cacheVariables": {
+		"CMAKE_BUILD_TYPE": "Debug",
+
+		"CMAKE_TOOLCHAIN_FILE": "vcpkg/scripts/buildsystems/vcpkg.cmake",
+        	"VCPKG_TARGET_TRIPLET": "arm64-linux"
+	}
     }
   ],
 
@@ -51,6 +64,12 @@
       "configurePreset": "vs2022-x64-release",
       "description": "Build the Release x64 configuration using Visual Studio 2022",
       "configuration": "Release"
+    },
+    {
+      "name": "makefiles-arm64-linux-debug",
+      "configurePreset": "makefiles-arm64-linux-debug",
+      "description": "Build the Debug arm64-linux configuration using Makefiles",
+      "configuration": "Debug"
     }
   ]
 }

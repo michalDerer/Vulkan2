@@ -4,9 +4,10 @@
 #include <vector>
 #include <string>
 
-//defines pre vulkan header setnute v CMakeLists
+//defines pre vulkan header setnute v CMakeLists podla platformy
 // #define VK_NO_PROTOTYPES
 // #define VK_USE_PLATFORM_WIN32_KHR
+// #define VK_USE_PLATFORM_XLIB_KHR
 #include "vulkan/vulkan.h"
 
 #include "SDL3/SDL.h"
@@ -63,7 +64,13 @@ int main()
 {
 
     Dynamic d{};
-    d.loadLib("vulkan-1.dll");
+#ifdef VK_USE_PLATFORM_WIN32_KHR
+    const char* sourceLib = "vulkan-1.dll";
+#elif defined(VK_USE_PLATFORM_XLIB_KHR)
+    //TODO: dorobit
+    const char* sourceLib = "";
+#endif
+    d.loadLib(sourceLib);
 
     // Initialize SDL
     if (!SDL_Init(SDL_INIT_VIDEO))
@@ -194,20 +201,25 @@ int main()
     }
     
     // Get window properties
+#ifdef VK_USE_PLATFORM_WIN32_KHR
     SDL_PropertiesID window_props = SDL_GetWindowProperties(window);
     HWND hwnd = (HWND)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
     HINSTANCE hinstance = (HINSTANCE)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER, nullptr);
+#elif defined(VK_USE_PLATFORM_XLIB_KHR)
+    //TODO: dorobit
+#endif
 
-
+#ifdef VK_USE_PLATFORM_WIN32_KHR
     VkWin32SurfaceCreateInfoKHR surfaceInfo{
         .sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
         .hinstance = hinstance,
-        .hwnd = hwnd
-    };
-    
+        .hwnd = hwnd};
+
     VK_CHECK(d.vkCreateWin32SurfaceKHR(context.instance, &surfaceInfo, VK_NULL_HANDLE, &context.surface))
-
-
+#elif defined(VK_USE_PLATFORM_XLIB_KHR)
+    //TODO: dorobit
+#endif
+    
     // Get physical device
     {
         uint32_t phDevicesCount;
@@ -231,8 +243,16 @@ int main()
             for (int i = 0; i < phDeviceQFamilyProps.size(); i++)
             {
                 VkBool32 surfaceSupported = false;
-                VK_CHECK(d.vkGetPhysicalDeviceSurfaceSupportKHR(phDevice, i, context.surface, &surfaceSupported))           //To determine whether a queue family of a physical device supports presentation to a given surface
-                VkBool32 surfaceSupportedWin = d.vkGetPhysicalDeviceWin32PresentationSupportKHR(phDevice, i);               //To determine whether a queue family of a physical device supports presentation to the Microsoft Windows desktop
+                //To determine whether a queue family of a physical device supports presentation to a given surface
+                VK_CHECK(d.vkGetPhysicalDeviceSurfaceSupportKHR(phDevice, i, context.surface, &surfaceSupported))
+                
+                VkBool32 surfaceSupportedWin = 0;
+#ifdef VK_USE_PLATFORM_WIN32_KHR
+                //To determine whether a queue family of a physical device supports presentation to the Microsoft Windows desktop
+                VkBool32 surfaceSupportedWin = d.vkGetPhysicalDeviceWin32PresentationSupportKHR(phDevice, i);
+#elif defined(VK_USE_PLATFORM_XLIB_KHR)
+                //TODO: dorobit
+#endif
                 VkBool32 graphicsBIT = phDeviceQFamilyProps[i].queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT;
                 VkBool32 transferBIT = phDeviceQFamilyProps[i].queueFamilyProperties.queueFlags & VK_QUEUE_TRANSFER_BIT;
                 bool selected = false;

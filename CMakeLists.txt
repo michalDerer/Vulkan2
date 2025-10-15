@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.0.0)
+cmake_minimum_required(VERSION 3.30.0)
 
 project(Vulkan2 VERSION 1.0 LANGUAGES C CXX)
 
@@ -23,10 +23,15 @@ set(SOURCES
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE
-    VK_NO_PROTOTYPES
-    VK_USE_PLATFORM_WIN32_KHR
-)
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE VK_NO_PROTOTYPES)
+if(WIN32)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_WIN32_KHR)
+elseif(UNIX)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_XLIB_KHR)
+endif()
+
+
 
 #${CMAKE_CURRENT_SOURCE_DIR}
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/include)

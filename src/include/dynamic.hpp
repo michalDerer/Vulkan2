@@ -11,13 +11,22 @@
 struct Dynamic
 {
 private:
+#ifdef VK_USE_PLATFORM_WIN32_KHR
     // Pointer na nacitanu kniznicu. 
     // HMODULE alebo HINSTANCE je to to iste.
     HMODULE lib = nullptr;
+#elif defined(VK_USE_PLATFORM_XLIB_KHR)
+    //TODO: doplnit
+    void* lib = nullptr;
+#endif
 
  public:
     void loadLib(const char* path);
+#ifdef VK_USE_PLATFORM_WIN32_KHR
     HMODULE get_lib() const;
+#elif defined(VK_USE_PLATFORM_XLIB_KHR)
+    //TODO: doplnit
+#endif
     void freeLib();
 
     void loadInstanceLevel(VkInstance& instance);
@@ -43,14 +52,19 @@ private:
     MEMBER(vkEnumeratePhysicalDevices)
     MEMBER(vkGetPhysicalDeviceProperties2)
     MEMBER(vkGetPhysicalDeviceQueueFamilyProperties2)
+    
 #ifdef _DEBUG
     MEMBER(vkCreateDebugUtilsMessengerEXT)
     MEMBER(vkDestroyDebugUtilsMessengerEXT)
 #endif
+
 #ifdef VK_USE_PLATFORM_WIN32_KHR
     MEMBER(vkCreateWin32SurfaceKHR)
     MEMBER(vkGetPhysicalDeviceWin32PresentationSupportKHR)
+#elif defined(VK_USE_PLATFORM_XLIB_KHR)
+    //TODO: doplnit
 #endif
+
     MEMBER(vkDestroySurfaceKHR)
     MEMBER(vkCreateDevice)
     MEMBER(vkDestroyDevice)
