@@ -5,6 +5,9 @@
 #include "dynamic.hpp"
 
 
+//-----------------------------------------------------------------------------
+
+
 #define MEMBER(name) PFN_##name name = VK_NULL_HANDLE;
 
 #define GET_INSTA_PROC_ADR_G(name)                                          \
@@ -18,6 +21,9 @@ do {                                                                        \
     name = (PFN_##name)vkGetInstanceProcAddr(handle, #name);                \
     NULL_CHECK(name)                                                        \
 } while (0);
+
+
+//-----------------------------------------------------------------------------
 
 
 void Dynamic::loadLib(const char* path)
@@ -57,6 +63,10 @@ void Dynamic::loadLib(const char* path)
     }
 }
 
+
+//-----------------------------------------------------------------------------
+
+
 #if VK_USE_PLATFORM_WIN32_KHR
 HMODULE Dynamic::get_lib() const
 {
@@ -68,6 +78,9 @@ void* Dynamic::get_lib() const
     return lib;
 }
 #endif
+
+
+//-----------------------------------------------------------------------------
 
 
 void Dynamic::freeLib()
@@ -116,17 +129,23 @@ void Dynamic::freeLib()
     }
 }
 
-void Dynamic::loadInstanceLevel(VkInstance& instance)
+
+//-----------------------------------------------------------------------------
+
+void Dynamic::loadInstanceLevelDebugUtils(VkInstance &instance)
+{
+#ifdef DEBUG
+    GET_INSTA_PROC_ADR(instance, vkCreateDebugUtilsMessengerEXT)
+    GET_INSTA_PROC_ADR(instance, vkDestroyDebugUtilsMessengerEXT)
+#endif
+}
+
+void Dynamic::loadInstanceLevel(VkInstance &instance)
 {
     GET_INSTA_PROC_ADR(instance, vkDestroyInstance)
     GET_INSTA_PROC_ADR(instance, vkEnumeratePhysicalDevices)
     GET_INSTA_PROC_ADR(instance, vkGetPhysicalDeviceProperties2)
     GET_INSTA_PROC_ADR(instance, vkGetPhysicalDeviceQueueFamilyProperties2)
-
-#ifdef DEBUG
-    GET_INSTA_PROC_ADR(instance, vkCreateDebugUtilsMessengerEXT)
-    GET_INSTA_PROC_ADR(instance, vkDestroyDebugUtilsMessengerEXT)
-#endif
 
 #ifdef VK_USE_PLATFORM_WIN32_KHR
     GET_INSTA_PROC_ADR(instance, vkCreateWin32SurfaceKHR)
@@ -145,6 +164,9 @@ void Dynamic::loadInstanceLevel(VkInstance& instance)
     GET_INSTA_PROC_ADR(instance, vkCreateSwapchainKHR)
     GET_INSTA_PROC_ADR(instance, vkDestroySwapchainKHR)
 }
+
+
+//-----------------------------------------------------------------------------
 
 
 #undef MEMBER

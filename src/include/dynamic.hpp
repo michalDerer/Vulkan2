@@ -5,12 +5,20 @@
 #include "vulkan/vulkan.h"
 
 
+//-----------------------------------------------------------------------------
+
+
 #define MEMBER(name) PFN_##name name = VK_NULL_HANDLE;
+
+
+//-----------------------------------------------------------------------------
 
 
 struct Dynamic
 {
+
 private:
+
 #ifdef VK_USE_PLATFORM_WIN32_KHR
     // Pointer na nacitanu kniznicu. 
     // HMODULE alebo HINSTANCE je to to iste.
@@ -19,7 +27,7 @@ private:
     void* lib = nullptr;
 #endif
 
- public:
+public:
     void loadLib(const char* path);
 
 #ifdef VK_USE_PLATFORM_WIN32_KHR
@@ -29,7 +37,12 @@ private:
 #endif
 
     void freeLib();
+
+    void loadInstanceLevelDebugUtils(VkInstance& instance);
     void loadInstanceLevel(VkInstance& instance);
+
+
+//-----------------------------------------------------------------------------
 
 
     /*
@@ -40,6 +53,9 @@ private:
     Instance	vkGetInstanceProcAddr(instance, "function")
     Device	    vkGetDeviceProcAddr(device, "function")
     */
+
+
+//-----------------------------------------------------------------------------
 
 
     //GLOBAL LEVEL FUNCTIONS

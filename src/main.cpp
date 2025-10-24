@@ -29,23 +29,6 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 
 
 
-struct Context
-{
-    VkInstance instance = VK_NULL_HANDLE;
-#ifdef DEBUG
-    VkDebugUtilsMessengerEXT debugUtilsMessengerEXT = VK_NULL_HANDLE;
-#endif
-    VkSurfaceKHR surface = VK_NULL_HANDLE;
-    VkSwapchainKHR swapchain = VK_NULL_HANDLE;
-
-    VkPhysicalDevice pDvecie = VK_NULL_HANDLE;
-    int pDeviceRenderQueueFamilyIdx = -1;
-
-    VkDevice device = VK_NULL_HANDLE;
-    VkQueue queue = VK_NULL_HANDLE;
-};
-
-
 std::string apiVersionToString(uint32_t apiVersion)
 {
     std::string s{std::to_string(VK_API_VERSION_VARIANT(apiVersion))}; 
@@ -60,6 +43,31 @@ std::string apiVersionToString(uint32_t apiVersion)
     return s;
 }
 
+
+//-----------------------------------------------------------------------------
+
+
+struct Context
+{
+    VkInstance instance = VK_NULL_HANDLE;
+#ifdef DEBUG
+    bool debugUtilsAccessible = false;
+    VkDebugUtilsMessengerEXT debugUtilsMessengerEXT = VK_NULL_HANDLE;
+#endif
+    VkSurfaceKHR surface = VK_NULL_HANDLE;
+    VkSwapchainKHR swapchain = VK_NULL_HANDLE;
+
+    VkPhysicalDevice pDvecie = VK_NULL_HANDLE;
+    int pDeviceRenderQueueFamilyIdx = -1;
+
+    VkDevice device = VK_NULL_HANDLE;
+    VkQueue queue = VK_NULL_HANDLE;
+};
+
+
+//-----------------------------------------------------------------------------
+
+
 int main()
 {
 
@@ -67,7 +75,6 @@ int main()
 #ifdef VK_USE_PLATFORM_WIN32_KHR
     const char* sourceLib = "vulkan-1.dll";
 #elif defined(VK_USE_PLATFORM_XLIB_KHR)
-    //TODO: dorobit
     const char* sourceLib = "libvulkan.so.1";
 #endif
     d.loadLib(sourceLib);
@@ -121,6 +128,7 @@ int main()
             if (strcmp(instaLaExProperty.extensionName, VK_EXT_DEBUG_UTILS_EXTENSION_NAME) == 0)
             {
                 instanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+                context.debugUtilsAccessible = true;
             }
         }
     }
@@ -165,16 +173,23 @@ int main()
 
 
     d.loadInstanceLevel(context.instance);
+    if (context.debugUtilsAccessible)
+    {
+        d.loadInstanceLevelDebugUtils(context.instance);
+    }
 
 
 #ifdef DEBUG
-    VkDebugUtilsMessengerCreateInfoEXT debugInfo{
-        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
-        .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT,
-        .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT,
-        .pfnUserCallback = debugCallback};
-
-    VK_CHECK(d.vkCreateDebugUtilsMessengerEXT(context.instance, &debugInfo, VK_NULL_HANDLE, &context.debugUtilsMessengerEXT))
+    if (context.debugUtilsAccessible)
+    {
+        VkDebugUtilsMessengerCreateInfoEXT debugInfo{
+            .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
+            .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT,
+            .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT,
+            .pfnUserCallback = debugCallback};
+    
+        VK_CHECK(d.vkCreateDebugUtilsMessengerEXT(context.instance, &debugInfo, VK_NULL_HANDLE, &context.debugUtilsMessengerEXT))
+    }
 #endif
 
 
