@@ -38,16 +38,16 @@
       }
     },
     {
-	"name": "makefiles-arm64-linux-debug",
-	"displayName": "Makefiles arm64-linux Debug",
-	"description": "Generate Makefiles project files for arm64-linux Debug build",
-	"generator": "Unix Makefiles",
-	"binaryDir": "${sourceDir}/build/makefiles-arm64-linux-debug",
-	"cacheVariables": {
-		"CMAKE_BUILD_TYPE": "Debug",
+	    "name": "makefiles-arm64-linux-debug",
+	    "displayName": "Makefiles arm64-linux Debug",
+	    "description": "Generate Makefiles project files for arm64-linux Debug build",
+	    "generator": "Unix Makefiles",
+	    "binaryDir": "${sourceDir}/build/makefiles-arm64-linux-debug",
+	    "cacheVariables": {
+		  "CMAKE_BUILD_TYPE": "Debug",
 
-		"CMAKE_TOOLCHAIN_FILE": "vcpkg/scripts/buildsystems/vcpkg.cmake",
-        	"VCPKG_TARGET_TRIPLET": "arm64-linux"
+		    "CMAKE_TOOLCHAIN_FILE": "vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "arm64-linux"
 	}
     }
   ],
