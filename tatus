@@ -1,0 +1,31 @@
+Commit ID: [38;5;4mb32a064cafe154c39efd89863a1f7cbcf5dcc308[39m
+Change ID: [38;5;5mouwsppuqmotxsxqzunurtqznqvsposkx[39m
+Author   : [38;5;3mmaiky[39m <[38;5;3mm.d@gmail.com[39m> ([38;5;6m2025-10-26 12:33:23[39m)
+Committer: [38;5;3mmaiky[39m <[38;5;3mm.d@gmail.com[39m> ([38;5;6m2025-10-26 12:33:23[39m)
+
+[38;5;3m    (no description set)[39m
+
+[38;5;3mModified regular file src/main.cpp:[39m
+    ...
+[38;5;1m 221[39m [38;5;2m 221[39m:     HWND hwnd = (HWND)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
+[38;5;1m 222[39m [38;5;2m 222[39m:     HINSTANCE hinstance = (HINSTANCE)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER, nullptr);
+[38;5;1m 223[39m [38;5;2m 223[39m: #elif defined(VK_USE_PLATFORM_XLIB_KHR)
+     [38;5;2m 224[39m: [4m[38;5;2m    SDL_PropertiesID window_props = SDL_GetWindowProperties(window);[24m[39m
+     [38;5;2m 225[39m: [4m[38;5;2m    Display* x11_display = (Display*)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, nullptr);[24m[39m
+     [38;5;2m 226[39m: [4m[38;5;2m    Window x11_window = (Window)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, nullptr);[24m[39m
+[38;5;1m 224[39m [38;5;2m 227[39m:     //TODO: dorobit
+[38;5;1m 225[39m [38;5;2m 228[39m: #endif
+[38;5;1m 226[39m [38;5;2m 229[39m: 
+    ...
+[38;5;1m 233[39m [38;5;2m 236[39m:     VK_CHECK(d.vkCreateWin32SurfaceKHR(context.instance, &surfaceInfo, VK_NULL_HANDLE, &context.surface))
+[38;5;1m 234[39m [38;5;2m 237[39m: #elif defined(VK_USE_PLATFORM_XLIB_KHR)
+[38;5;1m 235[39m [38;5;2m 238[39m:         VkXlibSurfaceCreateInfoKHR surfaceInfo{
+[38;5;1m 236[39m [38;5;2m 239[39m:             .sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR[4m[38;5;1m[24m[39m
+[38;5;1m 237[39m     : [4m[38;5;1m            //TODO: dorobit[24m[39m
+[38;5;1m 238[39m [38;5;2m 239[39m: [4m[38;5;1m            //Display*[38;5;2m,[24m[39m
+[38;5;1m 238[39m [38;5;2m 240[39m: [4m[38;5;2m           [24m[39m .dpy[4m[38;5;2m = x11_display[24m[39m,
+[38;5;1m 239[39m [38;5;2m 241[39m:             [4m[38;5;1m/*Window [24m[39m.window[4m[38;5;1m*/[38;5;2m =[24m[39m [4m[38;5;2mx11_window[24m[39m};
+[38;5;1m 240[39m [38;5;2m 242[39m: 
+[38;5;1m 241[39m [38;5;2m 243[39m:     VK_CHECK(d.vkCreateXlibSurfaceKHR(context.instance, &surfaceInfo, VK_NULL_HANDLE, &context.surface))
+[38;5;1m 242[39m [38;5;2m 244[39m: #endif
+    ...

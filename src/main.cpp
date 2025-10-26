@@ -221,6 +221,9 @@ int main()
     HWND hwnd = (HWND)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
     HINSTANCE hinstance = (HINSTANCE)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER, nullptr);
 #elif defined(VK_USE_PLATFORM_XLIB_KHR)
+    SDL_PropertiesID window_props = SDL_GetWindowProperties(window);
+    Display* x11_display = (Display*)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, nullptr);
+    Window x11_window = (Window)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, nullptr);
     //TODO: dorobit
 #endif
 
@@ -233,10 +236,9 @@ int main()
     VK_CHECK(d.vkCreateWin32SurfaceKHR(context.instance, &surfaceInfo, VK_NULL_HANDLE, &context.surface))
 #elif defined(VK_USE_PLATFORM_XLIB_KHR)
         VkXlibSurfaceCreateInfoKHR surfaceInfo{
-            .sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR
-            //TODO: dorobit
-            //Display* .dpy,
-            /*Window .window*/ };
+            .sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR,
+            .dpy = x11_display,
+            .window = x11_window};
 
     VK_CHECK(d.vkCreateXlibSurfaceKHR(context.instance, &surfaceInfo, VK_NULL_HANDLE, &context.surface))
 #endif
