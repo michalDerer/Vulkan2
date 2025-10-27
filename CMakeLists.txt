@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.30.0)
 
+
 project(Vulkan2 VERSION 1.0 LANGUAGES C CXX)
+
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
@@ -36,12 +38,18 @@ elseif(UNIX)
 endif()
 
 
+
 #${CMAKE_CURRENT_SOURCE_DIR}
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/include)
 
 
+
 find_package(SDL3 CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
+if(WIN32)
+	target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
+elseif(UNIX)
+	target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3 X11)
+endif()
 
 find_package(glm CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)

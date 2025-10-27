@@ -223,8 +223,11 @@ int main()
 #elif defined(VK_USE_PLATFORM_XLIB_KHR)
     SDL_PropertiesID window_props = SDL_GetWindowProperties(window);
     Display* x11_display = (Display*)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, nullptr);
-    Window x11_window = (Window)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, nullptr);
-    //TODO: dorobit
+    Window x11_window = (Window)(uintptr_t)SDL_GetNumberProperty(window_props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+
+    XWindowAttributes x11_attr{};
+    XGetWindowAttributes(x11_display, x11_window, &x11_attr);
+    VisualID x11_visualID = XVisualIDFromVisual(x11_attr.visual);
 #endif
 
 #ifdef VK_USE_PLATFORM_WIN32_KHR
@@ -243,6 +246,10 @@ int main()
     VK_CHECK(d.vkCreateXlibSurfaceKHR(context.instance, &surfaceInfo, VK_NULL_HANDLE, &context.surface))
 #endif
     
+
+    //SDL_Vulkan_CreateSurface(window, instance, &surface);
+
+
     // Get physical device
     {
         uint32_t phDevicesCount;
@@ -269,20 +276,19 @@ int main()
                 //To determine whether a queue family of a physical device supports presentation to a given surface
                 VK_CHECK(d.vkGetPhysicalDeviceSurfaceSupportKHR(phDevice, i, context.surface, &surfaceSupported))
                 
-                VkBool32 surfaceSupportedWin = 0;
+                VkBool32 surfaceSupportedPlatformDepend = 0;
 #ifdef VK_USE_PLATFORM_WIN32_KHR
                 //To determine whether a queue family of a physical device supports presentation to the Microsoft Windows desktop
-                surfaceSupportedWin = d.vkGetPhysicalDeviceWin32PresentationSupportKHR(phDevice, i);
+                surfaceSupportedPlatformDepend = d.vkGetPhysicalDeviceWin32PresentationSupportKHR(phDevice, i);
 #elif defined(VK_USE_PLATFORM_XLIB_KHR)
-                //TODO: dorobit
                 //To determine whether a queue family of a physical device supports presentation to the Microsoft Windows desktop
-                //surfaceSupportedWin = d.vkGetPhysicalDeviceXlibPresentationSupportKHR(phDevice, i, /* Display* */ &dpy, /* VisualID */ visualID)
+                surfaceSupportedPlatformDepend  = d.vkGetPhysicalDeviceXlibPresentationSupportKHR(phDevice, i,  x11_display, x11_visualID);
 #endif
                 VkBool32 graphicsBIT = phDeviceQFamilyProps[i].queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT;
                 VkBool32 transferBIT = phDeviceQFamilyProps[i].queueFamilyProperties.queueFlags & VK_QUEUE_TRANSFER_BIT;
                 bool selected = false;
 
-                if (surfaceSupported && surfaceSupportedWin && graphicsBIT && transferBIT && context.pDvecie == VK_NULL_HANDLE)
+                if (surfaceSupported && surfaceSupportedPlatformDepend && graphicsBIT && transferBIT && context.pDvecie == VK_NULL_HANDLE)
                 {
                     context.pDvecie = phDevice;
                     context.pDeviceRenderQueueFamilyIdx = i;
@@ -292,7 +298,7 @@ int main()
                 std::cout << "Family idx: " << i << 
                     " family count: " << phDeviceQFamilyProps[i].queueFamilyProperties.queueCount << 
                     " surfaceSupported: " << ((surfaceSupported) ? "true" : "false") <<
-                    " surfaceSupportedWin: " << ((surfaceSupportedWin) ? "true" : "false") <<
+                    " surfaceSupportedPlatformDepend: " << ((surfaceSupportedPlatformDepend) ? "true" : "false") <<
                     " graphics BIT: " << ((graphicsBIT) ? "true" : "false") <<
                     " transfer BIT: " << ((transferBIT) ? "true" : "false") <<
                     (selected ? " SELECTED" : "") <<
