@@ -10,16 +10,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 
 # Collect source files
 set(SOURCES
-    src/include/dynamic.hpp
-    src/include/macros.hpp
-    src/main.cpp
+    Vulkan2_projekt/src/main.cpp
     src/dynamic.cpp
 )
-
+#file(GLOB SOURCES CONFIGUTE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Vulkan2 projekt/src/*.cpp}")
 
 # definuje executable
 add_executable(${PROJECT_NAME} ${SOURCES})
 
+
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/Vulkan2_projekt/include)
 
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -36,11 +36,6 @@ if(WIN32)
 elseif(UNIX)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_XLIB_KHR)
 endif()
-
-
-
-#${CMAKE_CURRENT_SOURCE_DIR}
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/include)
 
 
 

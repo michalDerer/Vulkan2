@@ -284,11 +284,13 @@ int main()
                 //To determine whether a queue family of a physical device supports presentation to the Microsoft Windows desktop
                 surfaceSupportedPlatformDepend  = d.vkGetPhysicalDeviceXlibPresentationSupportKHR(phDevice, i,  x11_display, x11_visualID);
 #endif
+
+                VkBool32 version = VK_API_VERSION_MINOR(phDeviceProperties.properties.apiVersion) >= 4 ? true : false;
                 VkBool32 graphicsBIT = phDeviceQFamilyProps[i].queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT;
                 VkBool32 transferBIT = phDeviceQFamilyProps[i].queueFamilyProperties.queueFlags & VK_QUEUE_TRANSFER_BIT;
                 bool selected = false;
 
-                if (surfaceSupported && surfaceSupportedPlatformDepend && graphicsBIT && transferBIT && context.pDvecie == VK_NULL_HANDLE)
+                if (surfaceSupported && surfaceSupportedPlatformDepend && version && graphicsBIT && transferBIT && context.pDvecie == VK_NULL_HANDLE)
                 {
                     context.pDvecie = phDevice;
                     context.pDeviceRenderQueueFamilyIdx = i;
@@ -337,7 +339,7 @@ int main()
         VkSurfaceCapabilitiesKHR surfaceCapabilities{};
         VK_CHECK(d.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(context.pDvecie, context.surface, &surfaceCapabilities))
 
-        std::cout << "\nExtend:" << surfaceCapabilities.currentExtent.width << "x" << surfaceCapabilities.currentExtent.height;
+        std::cout << "\nExtend:" << surfaceCapabilities.currentExtent.width << "x" << surfaceCapabilities.currentExtent.height << "\n";
         if (surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) 
             std::cout << "\nSurface supported usage: VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT";
 
@@ -418,6 +420,6 @@ int main()
 
     d.freeLib();
 
-    std::cout << "DONE\n";
+    std::cout << "\nDONE\n";
     return 0;
 }
