@@ -5,8 +5,16 @@
     {
       "name": "sdl3",
       "features": [
-        "vulkan", "x11"
-      ]
+        "vulkan"      
+      ],
+      "platform": "windows"
+    },
+    {
+      "name": "sdl3",
+      "features": [
+        "vulkan","x11"      
+      ],
+      "platform": "linux"
     }
   ]
 }

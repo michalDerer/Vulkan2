@@ -8,18 +8,25 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 
 
-# Collect source files
-set(SOURCES
-    Vulkan2_projekt/src/main.cpp
-    src/dynamic.cpp
-)
-#file(GLOB SOURCES CONFIGUTE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Vulkan2 projekt/src/*.cpp}")
+#Collect source files
+#set(
+#   SOURCES
+#   Vulkan2_projekt/src/main.cpp
+#   Vulkan2_projekt/src/dynamic.cpp
+#)
+file(GLOB SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/Vulkan2_projekt/src/*.cpp")		#pre rekurzivne prehldanie do hlbky pouzi GLOB_RECURSE
+#message(STATUS "Source files: ${SOURCES}")
 
-# definuje executable
+
+# definuje projekt vytvarajuci executable
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 
+#musi ist po add_executable,... ktory vytvori target
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/Vulkan2_projekt/include)
+#musi ist po add_executable,... ktory vytvori target
+#target_link_libraries()
+
 
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -39,22 +46,48 @@ endif()
 
 
 
-find_package(SDL3 CONFIG REQUIRED)
-if(WIN32)
-	target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
-elseif(UNIX)
-	target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3 X11)
+if (WIN32)
+    message(STATUS "Configuring for Windows...")
+
+    find_package(SDL3 CONFIG REQUIRED)
+    find_package(glm CONFIG REQUIRED)
+    #find_package(Vulkan REQUIRED)			#toto najde externe nainstalovane Vulkan SDK
+    find_package(VulkanHeaders CONFIG REQUIRED)		#toto najde Vulkan SDK headers z vcpkg
+
+    target_link_libraries(
+	${PROJECT_NAME} 
+	PRIVATE
+        SDL3::SDL3
+	#X11				
+	glm::glm			#glm
+	#glm::glm-header-only 		#glm header only varianta
+        #Vulkan::Vulkan			#Vulkan library z externeho Vulkan SDK
+	Vulkan::Headers			#Vulkan header library z vcpkg
+    )
+
+elseif (UNIX)
+    message(STATUS "Configuring for Linux...")
+
+    find_package(SDL3 CONFIG REQUIRED)
+    find_package(glm CONFIG REQUIRED)
+    #find_package(Vulkan REQUIRED)			#toto najde externe nainstalovane Vulkan SDK
+    find_package(VulkanHeaders CONFIG REQUIRED)		#toto najde Vulkan SDK headers z vcpkg
+
+    target_link_libraries(
+	${PROJECT_NAME} 
+        PRIVATE 
+        SDL3::SDL3 
+        X11				#linux only lib pre komunikaciu s oknom
+        glm::glm			#glm
+	#glm::glm-header-only		#glm header only varianta
+	#Vulkan::Vulkan			#Vulkan library z externeho Vulkan SDK
+	Vulkan::Headers			#Vulkan header library z vcpkg
+    )
+
 endif()
 
-find_package(glm CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
-# Or use the header-only version
-#find_package(glm CONFIG REQUIRED)
-#target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm-header-only)
 
-# Nechcem pouzivat Vulkan SDK
-#find_package(Vulkan REQUIRED)
-#target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan)
-#Chcem pouzit Vulkan poskitnuty cez vcpkg 
-find_package(VulkanHeaders CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME}  PRIVATE Vulkan::Headers)
+
+
+
+

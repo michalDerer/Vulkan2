@@ -341,7 +341,7 @@ int main()
 
         std::cout << "\nExtend:" << surfaceCapabilities.currentExtent.width << "x" << surfaceCapabilities.currentExtent.height << "\n";
         if (surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) 
-            std::cout << "\nSurface supported usage: VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT";
+            std::cout << "Surface supported usage: VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT\n";
 
         // PFN_vkGetPhysicalDeviceSurfaceSupportKHR
         // PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR

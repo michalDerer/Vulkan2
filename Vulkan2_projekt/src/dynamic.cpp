@@ -1,5 +1,7 @@
 
+#if VK_USE_PLATFORM_XLIB_KHR
 #include <dlfcn.h>
+#endif
 
 #include "macros.hpp"
 #include "dynamic.hpp"
