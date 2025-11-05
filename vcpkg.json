@@ -1,6 +1,8 @@
 {
   "dependencies": [
     "vulkan-headers",
+    "vulkan-loader",
+    "vulkan-validationlayers",
     "glm",
     {
       "name": "sdl3",
