@@ -339,33 +339,55 @@ int main()
         VkSurfaceCapabilitiesKHR surfaceCapabilities{};
         VK_CHECK(d.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(context.pDvecie, context.surface, &surfaceCapabilities))
 
+        uint32_t surfaceFormatCount;
+        VK_CHECK(d.vkGetPhysicalDeviceSurfaceFormatsKHR(context.pDvecie, context.surface, &surfaceFormatCount, VK_NULL_HANDLE))
+        std::vector<VkSurfaceFormatKHR> surfaceFormats{surfaceFormatCount};
+        VK_CHECK(d.vkGetPhysicalDeviceSurfaceFormatsKHR(context.pDvecie, context.surface, &surfaceFormatCount, surfaceFormats.data()))
+
+        uint32_t presentationModesCount;
+        VK_CHECK(d.vkGetPhysicalDeviceSurfacePresentModesKHR(context.pDvecie, context.surface, &presentationModesCount, VK_NULL_HANDLE))
+        std::vector<VkPresentModeKHR> presentationModes{presentationModesCount};
+        VK_CHECK(d.vkGetPhysicalDeviceSurfacePresentModesKHR(context.pDvecie, context.surface, &presentationModesCount, presentationModes.data()))
+        
+        
         std::cout << "\nExtend:" << surfaceCapabilities.currentExtent.width << "x" << surfaceCapabilities.currentExtent.height << "\n";
         if (surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) 
             std::cout << "Surface supported usage: VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT\n";
+        std::cout << "\n";
 
-        // PFN_vkGetPhysicalDeviceSurfaceSupportKHR
+        for (auto& f : surfaceFormats)
+        {
+            std::cout << "Podporovany format a color space by surface, pDevice: " << f.format << " " << f.colorSpace << "\n";
+        }
+
+        for (auto& p : presentationModes)
+        {
+            std::cout << "Podporovany presentation mode: " << p << "\n";
+        }
+
+        // PFN_vkGetPhysicalDeviceSurfaceSupportKHR         --ci moze pDevice a jeho queueFamily podporovat pracu so surface
         // PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR
         // PFN_vkGetPhysicalDeviceSurfaceFormatsKHR
         // PFN_vkGetPhysicalDeviceSurfacePresentModesKHR
 
-        // VkSwapchainCreateInfoKHR cSwapchainInfo{
-        //     .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-        //     .surface = context.surface,
-        //     // uint32_t                         minImageCount;
-        //     // VkFormat                         imageFormat;
-        //     // VkColorSpaceKHR                  imageColorSpace;
-        //     // VkExtent2D                       imageExtent;
-        //     // uint32_t                         imageArrayLayers;
-        //     .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-        //     .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,                  //ak si dobre pametam malo by to znamenat ze exluzivne len jedna qFamily alebo q bude robit so swapchainou
-        //     // uint32_t                         queueFamilyIndexCount;
-        //     // const uint32_t*                  pQueueFamilyIndices;
-        //     // VkSurfaceTransformFlagBitsKHR    preTransform;
-        //     .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-        //     // VkPresentModeKHR                 presentMode;
-        //     // VkBool32                         clipped;
-        //     // VkSwapchainKHR                   oldSwapchain;
-        // };
+        VkSwapchainCreateInfoKHR cSwapchainInfo{
+            .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+            .surface = context.surface,
+            .minImageCount = surfaceCapabilities.minImageCount + 1 <= surfaceCapabilities.maxImageCount ? surfaceCapabilities.minImageCount + 1 : surfaceCapabilities.maxImageCount,
+            .imageFormat = surfaceFormats[0].format,
+            .imageColorSpace = surfaceFormats[0].colorSpace,
+            .imageExtent = surfaceCapabilities.currentExtent,
+            // uint32_t                         imageArrayLayers;
+            .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+            .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,                  //ak si dobre pametam malo by to znamenat ze exluzivne len jedna qFamily alebo q bude robit so swapchainou
+            // uint32_t                         queueFamilyIndexCount;
+            // const uint32_t*                  pQueueFamilyIndices;
+            // VkSurfaceTransformFlagBitsKHR    preTransform;
+            .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+            // VkPresentModeKHR                 presentMode;
+            // VkBool32                         clipped;
+            // VkSwapchainKHR                   oldSwapchain;
+        };
 
         //VK_CHECK(d.vkCreateSwapchainKHR(context.device, &cSwapchainInfo, VK_NULL_HANDLE, &context.swapchain))
     }

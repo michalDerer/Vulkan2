@@ -88,6 +88,8 @@ public:
     MEMBER(vkGetDeviceQueue2)
     MEMBER(vkGetPhysicalDeviceSurfaceSupportKHR)
     MEMBER(vkGetPhysicalDeviceSurfaceCapabilitiesKHR)
+    MEMBER(vkGetPhysicalDeviceSurfaceFormatsKHR)
+    MEMBER(vkGetPhysicalDeviceSurfacePresentModesKHR)
     MEMBER(vkCreateSwapchainKHR)
     MEMBER(vkDestroySwapchainKHR)
 };
